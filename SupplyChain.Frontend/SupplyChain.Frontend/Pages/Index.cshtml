@@ -1,10 +1,61 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center mb-5">
+    <h1 class="display-5 fw-bold text-primary"> Dashboard Overview</h1>
+    <p class="lead text-muted">Real-time insights into your supply chain operations.</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3 shadow h-100">
+            <div class="card-header fw-bold"> Total Products</div>
+            <div class="card-body">
+                <h1 class="card-title display-4">@Model.ProductCount</h1>
+                <p class="card-text">Items currently available in the warehouse.</p>
+                <a href="/Products" class="btn btn-light btn-sm text-primary fw-bold">Manage Products</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3 shadow h-100">
+            <div class="card-header fw-bold"> Total Orders</div>
+            <div class="card-body">
+                <h1 class="card-title display-4">@Model.OrderCount</h1>
+                <p class="card-text">Orders processed through the system.</p>
+                <a href="/Orders" class="btn btn-light btn-sm text-success fw-bold">View Orders</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-white bg-warning mb-3 shadow h-100">
+            <div class="card-header text-dark fw-bold"> Inventory Value</div>
+            <div class="card-body text-dark">
+                <h1 class="card-title display-4">$@Model.InventoryValue.ToString("N0")</h1>
+                <p class="card-text">Estimated total value of stock on hand.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row align-items-md-stretch">
+    <div class="col-md-12">
+        <div class="h-100 p-5 bg-light border rounded-3 text-center">
+            <h2> Quick Actions</h2>
+            <p>Start a new transaction or add new inventory items immediately.</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="/CreateOrder" class="btn btn-outline-dark btn-lg">
+                    <i class="bi bi-cart-plus"></i> New Order
+                </a>
+                <a href="/CreateProduct" class="btn btn-outline-dark btn-lg">
+                    <i class="bi bi-plus-circle"></i> Add Product
+                </a>
+            </div>
+        </div>
+    </div>
 </div>

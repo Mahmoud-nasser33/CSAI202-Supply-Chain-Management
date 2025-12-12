@@ -1,20 +1,48 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Net.Http.Json;
+using SupplyChain.Frontend.Pages; 
 
 namespace SupplyChain.Frontend.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly ILogger<IndexModel> _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public IndexModel(ILogger<IndexModel> logger)
+        public IndexModel(IHttpClientFactory httpClientFactory)
         {
-            _logger = logger;
+            _httpClientFactory = httpClientFactory;
         }
 
-        public void OnGet()
-        {
+       
+        public int ProductCount { get; set; } = 0;
+        public int OrderCount { get; set; } = 0;
+        public decimal InventoryValue { get; set; } = 0;
 
+        public async Task OnGetAsync()
+        {
+            var client = _httpClientFactory.CreateClient("BackendApi");
+
+            try
+            {
+             
+                var products = await client.GetFromJsonAsync<List<ProductDto>>("api/Products");
+                if (products != null)
+                {
+                    ProductCount = products.Count;
+                    InventoryValue = products.Sum(p => p.Price * p.StockQuantity);
+                }
+
+                
+                var orders = await client.GetFromJsonAsync<List<dynamic>>("api/Orders");
+                if (orders != null)
+                {
+                    OrderCount = orders.Count;
+                }
+            }
+            catch (Exception)
+            {
+               
+            }
         }
     }
 }
