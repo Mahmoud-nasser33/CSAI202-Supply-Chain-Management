@@ -1,0 +1,38 @@
+﻿@page
+@model SupplyChain.Frontend.Pages.CreateOrderModel
+@{
+    ViewData["Title"] = "New Order";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">🛒 Create New Order</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Select Product</label>
+                            <select asp-for="Order.ProductId" asp-items="Model.ProductOptions" class="form-select" required>
+                                <option value="">-- Choose a Product --</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Quantity</label>
+                            <input asp-for="Order.Quantity" type="number" class="form-control" min="1" value="1" required />
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-warning btn-lg">Place Order</button>
+                            <a href="/Orders" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
