@@ -11,6 +11,16 @@ namespace SupplyChain.Backend.Controllers
         [HttpPost("create")]
         public IActionResult CreateOrder([FromBody] Order order)
         {
+            if (order.TotalAmount <= 0)
+            {
+                return BadRequest("Order total amount must be greater than zero.");
+            }
+
+            if (order.TotalAmount > 100000)
+            {
+                // Simulate server error for large orders
+                return StatusCode(500, "Simulated backend error: Order limit exceeded.");
+            }
             
             return Ok(new
             {
