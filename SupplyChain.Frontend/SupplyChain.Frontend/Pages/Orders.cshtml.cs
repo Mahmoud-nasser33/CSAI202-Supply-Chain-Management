@@ -15,6 +15,7 @@ namespace SupplyChain.Frontend.Pages
 
         
         public List<OrderDto> Orders { get; set; } = new List<OrderDto>();
+        public string ErrorMessage { get; set; }
 
         public async Task OnGet()
         {
@@ -28,7 +29,7 @@ namespace SupplyChain.Frontend.Pages
             }
             catch (Exception ex)
             {
-                
+                ErrorMessage = $"Unable to load orders: {ex.Message}";
                 Console.WriteLine($"Error fetching orders: {ex.Message}");
             }
         }

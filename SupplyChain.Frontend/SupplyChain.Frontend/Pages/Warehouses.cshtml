@@ -1,0 +1,34 @@
+@page
+@model SupplyChain.Frontend.Pages.WarehousesModel
+@{
+    ViewData["Title"] = "Warehouses";
+}
+
+<div class="container mt-5">
+    <h2 class="text-primary mb-4">Storage Locations</h2>
+    <hr />
+
+    <div class="row">
+        @if (Model.Warehouses != null && Model.Warehouses.Any())
+        {
+            @foreach (var warehouse in Model.Warehouses)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm border-info h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-box-seam display-4 text-info mb-3"></i>
+                            <h4 class="card-title fw-bold">@warehouse.Name</h4>
+                            <p class="card-text text-muted">@warehouse.Location</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center text-muted">
+                <p>No warehouses found.</p>
+            </div>
+        }
+    </div>
+</div>

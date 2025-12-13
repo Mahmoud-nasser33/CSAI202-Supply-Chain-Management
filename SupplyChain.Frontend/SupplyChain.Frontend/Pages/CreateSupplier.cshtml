@@ -1,0 +1,42 @@
+@page
+@model SupplyChain.Frontend.Pages.CreateSupplierModel
+@{
+    ViewData["Title"] = "Add Supplier";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Add New Supplier</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Supplier Name</label>
+                            <input asp-for="Supplier.Name" class="form-control" required placeholder="e.g. MegaCorp" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Contact Info (Email)</label>
+                            <input asp-for="Supplier.ContactInfo" type="email" class="form-control" required placeholder="contact@example.com" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Address</label>
+                            <textarea asp-for="Supplier.Address" class="form-control" rows="3" required placeholder="123 Business Rd"></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">Save Supplier</button>
+                            <a href="/Suppliers" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
