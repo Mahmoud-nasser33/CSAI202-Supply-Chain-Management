@@ -4,65 +4,185 @@
     ViewData["Title"] = "My Orders";
 }
 
-<div class="container mt-5">
-    <h2 class="text-primary">User Orders History</h2>
-
-    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-    {
-        <div class="alert alert-danger" role="alert">
-            @Model.ErrorMessage
+<div class="container-bento py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6"><i class="bi bi-cart3 text-primary"></i> <span id="ordersPageTitle">Order History</span></h1>
+            <p class="text-muted" id="ordersPageDesc">Manage and track your recent purchases.</p>
         </div>
-    }
-
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="text-primary"> User Orders History</h2>
-        <a href="/CreateOrder" class="btn btn-warning">
-            <i class="bi bi-cart-plus"></i> New Order
-        </a>
+        <div class="col-md-4 text-end align-self-center role-customer-only">
+            <a href="/CreateOrder" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Order</a>
+        </div>
     </div>
-    <hr />
 
-    <table class="table table-striped table-bordered">
-        <thead class="table-dark">
-            <tr>
-                <th>Order ID</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Total Amount</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Orders != null && Model.Orders.Count > 0)
-            {
-                @foreach (var order in Model.Orders)
-                {
-                    <tr>
-                        <td>#@order.OrderID</td>
-                        <td>
-                            @if (order.OrderDate.Year < 1900)
+    <!-- Stats Grid -->
+    <div class="bento-grid mb-5">
+        <!-- Total Orders -->
+        <div class="card border-0 shadow-sm glass-panel animate-enter delay-1">
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <i class="bi bi-cart-fill text-primary" style="font-size: 3.5rem;"></i>
+                </div>
+                <h2 class="fw-bold mb-0">@(Model.Orders?.Count ?? 0)</h2>
+                <small class="text-muted">Total Orders</small>
+            </div>
+        </div>
+
+        <!-- Pending Orders -->
+        <div class="card border-0 shadow-sm glass-panel animate-enter delay-2">
+             <div class="card-body">
+                 <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-2">
+                        <i class="bi bi-hourglass-split fs-4"></i>
+                    </div>
+                </div>
+                <!-- Mock Data for Pending -->
+                <h2 class="fw-bold mb-0 text-dark">8</h2>
+                <small class="text-muted">Pending Approvals</small>
+            </div>
+        </div>
+
+        <!-- Total Spend -->
+        <div class="card border-0 shadow-sm glass-panel animate-enter delay-3">
+             <div class="card-body">
+                 <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="bg-success bg-opacity-10 text-success rounded-circle p-2">
+                        <i class="bi bi-currency-dollar fs-4"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold mb-0 text-dark">$124.5k</h2>
+                <small class="text-muted">Total Spend (Q4)</small>
+            </div>
+        </div>
+        
+        <!-- Fulfillment Rate -->
+         <div class="card border-0 shadow-sm glass-panel animate-enter delay-4">
+             <div class="card-body">
+                 <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="bg-info bg-opacity-10 text-info rounded-circle p-2">
+                        <i class="bi bi-graph-up-arrow fs-4"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold mb-0 text-dark">98.5%</h2>
+                <small class="text-muted">Fulfillment Rate</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form method="get" class="d-flex gap-2">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="searchString" value="@Model.SearchString" class="form-control border-start-0 ps-0" placeholder="Search by ID, Status, or Supplier...">
+                </div>
+                <button type="submit" class="btn btn-outline-primary">Advanced Search</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Order ID</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Total Amount</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Orders != null && Model.Orders.Count > 0)
+                        {
+                            @foreach (var order in Model.Orders)
                             {
-                                <span>--</span>
+                                <tr>
+                                    <td class="ps-4 fw-bold text-primary">#@order.OrderID</td>
+                                    <td>@order.OrderDate.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        @switch (order.Status)
+                                        {
+                                            case "Shipped":
+                                            case "Delivered":
+                                                <span class="badge badge-soft-success rounded-pill px-3">@order.Status</span>
+                                                break;
+                                            case "Processing":
+                                                <span class="badge badge-soft-primary rounded-pill px-3">@order.Status</span>
+                                                break;
+                                            case "Pending":
+                                                <span class="badge badge-soft-warning rounded-pill px-3">@order.Status</span>
+                                                break;
+                                            case "Cancelled":
+                                                <span class="badge badge-soft-danger rounded-pill px-3">@order.Status</span>
+                                                break;
+                                            default:
+                                                <span class="badge badge-soft-secondary rounded-pill px-3">@order.Status</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td class="fw-bold">$@order.TotalAmount.ToString("N2")</td>
+                                    <td class="text-end pe-4">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                                <li><a class="dropdown-item" href="#"><i class="bi bi-eye me-2 text-muted"></i> View Details</a></li>
+                                                <li><a class="dropdown-item" href="#"><i class="bi bi-receipt me-2 text-muted"></i> Invoice</a></li>
+                                                @if(order.Status == "Pending") {
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-x-circle me-2"></i> Cancel Order</a></li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
                             }
-                            else
-                            {
-                                @order.OrderDate.ToString("yyyy-MM-dd")
-                            }
-                        </td>
-                        <td>
-                            <span class="badge bg-secondary">@order.Status</span>
-                        </td>
-                        <td>$@order.TotalAmount</td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="4" class="text-center text-muted p-4">
-                        No orders found.
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-5">
+                                    <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
+                                    No orders found matching your search.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-white border-top-0 py-3">
+             <small class="text-muted">Showing @Model.Orders.Count orders</small>
+        </div>
+    </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const user = sessionManager.getCurrentUser();
+        if (!user) return;
+
+        const title = document.getElementById('ordersPageTitle');
+        const desc = document.getElementById('ordersPageDesc');
+        const customerOnly = document.querySelectorAll('.role-customer-only');
+
+        if (user.role === 'user' || user.role === 'admin') {
+            if (title) title.textContent = 'Order Fulfillment Management';
+            if (desc) desc.textContent = 'Monitor, process, and update customer orders across all warehouses.';
+            customerOnly.forEach(el => el.style.display = 'none');
+        } else if (user.role === 'supplier') {
+            if (title) title.textContent = 'Active Supply Requests';
+            if (desc) desc.textContent = 'View and manage incoming supply orders and requirements.';
+            customerOnly.forEach(el => el.style.display = 'none');
+        }
+    });
+
+    // Protect this page
+    if (!sessionManager.isLoggedIn()) {
+        window.location.href = '/Login';
+    }
+</script>

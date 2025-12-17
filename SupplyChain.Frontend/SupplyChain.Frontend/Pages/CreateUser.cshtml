@@ -1,0 +1,47 @@
+@page
+@model SupplyChain.Frontend.Pages.CreateUserModel
+@{
+    ViewData["Title"] = "Add System User";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="bi bi-person-plus-fill"></i> Add System User</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" name="Username" placeholder="e.g. jdoe_admin" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="Email" placeholder="jdoe@company.com" required>
+                        </div>
+                         <div class="mb-3">
+                            <label class="form-label">Role</label>
+                            <select class="form-select" name="Role">
+                                <option value="Administrator">Administrator</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Staff">Staff</option>
+                                <option value="Driver">Driver</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Temporary Password</label>
+                            <input type="password" class="form-control" name="Password" required>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-info text-white btn-lg">Create User</button>
+                            <a href="/Users" class="btn btn-light">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,145 @@
+@page
+@model SupplyChain.Frontend.Pages.CustomersModel
+@{
+    ViewData["Title"] = "Customers";
+}
+
+<div class="container-bento py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 animate-enter">
+        <div>
+            <h2 class="fw-bold mb-0">Customer Base</h2>
+            <p class="text-muted mb-0">Manage relationships and profiles</p>
+        </div>
+        <div>
+            <a href="/CreateCustomer" class="btn btn-primary btn-lg shadow-sm">
+                <i class="bi bi-person-plus me-2"></i> New Customer
+            </a>
+        </div>
+    </div>
+
+    <!-- Customer Stats Grid -->
+    <div class="bento-grid mb-5">
+        <!-- Total Customers - Span 2 -->
+        <div class="card border-0 shadow-sm glass-panel bg-gradient-blue text-white span-col-2 animate-enter delay-1" style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="bg-white bg-opacity-25 rounded-circle p-2">
+                        <i class="bi bi-people-fill fs-4"></i>
+                    </div>
+                     <span class="badge bg-white bg-opacity-25 border border-white border-opacity-25">+12% growth</span>
+                </div>
+                <h2 class="display-4 fw-bold mb-0">2,450</h2>
+                <small class="text-white text-opacity-75">Total Registered Customers</small>
+            </div>
+        </div>
+
+        <!-- Active Users -->
+        <div class="card border-0 shadow-sm glass-panel animate-enter delay-2">
+             <div class="card-body">
+                 <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="bg-success bg-opacity-10 text-success rounded-circle p-2">
+                        <i class="bi bi-person-check fs-4"></i>
+                    </div>
+                     <span class="text-success small fw-bold">Active</span>
+                </div>
+                <h2 class="fw-bold mb-0 text-dark">1,890</h2>
+                <small class="text-muted">Active this month</small>
+            </div>
+        </div>
+
+        <!-- Retention -->
+        <div class="card border-0 shadow-sm glass-panel animate-enter delay-3">
+             <div class="card-body">
+                 <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-2">
+                        <i class="bi bi-arrow-repeat fs-4"></i>
+                    </div>
+                     <span class="text-warning small fw-bold">Retention</span>
+                </div>
+                <h2 class="fw-bold mb-0 text-dark">85%</h2>
+                <small class="text-muted">Returning rate</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer List Widget -->
+    <div class="card shadow-sm border-0 glass-panel animate-enter delay-4 span-col-4">
+        <div class="card-body p-0">
+             <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                 <h5 class="fw-bold mb-0">Customer Directory</h5>
+                  <div class="input-group" style="width: 300px;">
+                    <span class="input-group-text bg-light border-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" class="form-control border-0 bg-light" placeholder="Search customers directly...">
+                </div>
+             </div>
+        
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3">Customer</th>
+                            <th class="py-3">Contact</th>
+                            <th class="py-3">Location</th>
+                            <th class="py-3">Status</th>
+                            <th class="py-3">Orders</th>
+                            <th class="text-end pe-4 py-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.CustomerList)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-gradient-light rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm text-primary fw-bold" style="width: 40px; height: 40px; font-size: 1rem;">
+                                            @item.Name.Substring(0,1)
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold text-dark d-block">@item.Name</span>
+                                            <small class="text-muted">ID: #@item.CustomerID</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <a href="mailto:@item.Email" class="text-decoration-none text-muted small"><i class="bi bi-envelope me-1"></i> @item.Email</a>
+                                    </div>
+                                </td>
+                                <td><span class="text-muted small"><i class="bi bi-geo-alt me-1"></i> @item.Address</span></td>
+                                <td><span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">Active</span></td>
+                                <td><span class="fw-bold">@item.TotalOrders</span></td>
+                                <td class="text-end pe-4">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                            <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2 text-muted"></i> Edit Profile</a></li>
+                                            <li><a class="dropdown-item" href="#"><i class="bi bi-clock-history me-2 text-muted"></i> Order History</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                             <li>
+                                                <form method="post" asp-page-handler="Delete" asp-route-id="@item.CustomerID" onsubmit="return confirm('Delete this customer?');">
+                                                    <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i> Delete</button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+             <div class="p-3 border-top">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center mb-0 pagination-sm">
+                        <li class="page-item disabled"><a class="page-link border-0 rounded-start" href="#">Previous</a></li>
+                        <li class="page-item active"><a class="page-link border-0" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link border-0" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link border-0 rounded-end" href="#">Next</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,46 @@
+@page
+@model SupplyChain.Frontend.Pages.CreateShipmentModel
+@{
+    ViewData["Title"] = "Create Shipment";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="bi bi-truck"></i> Create Shipment</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Order ID</label>
+                            <input type="text" class="form-control" placeholder="e.g. ORD-2025-001" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Destination</label>
+                            <input type="text" class="form-control" placeholder="e.g. Cairo Branch" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Carrier</label>
+                            <select class="form-select">
+                                <option>FedEx</option>
+                                <option>DHL</option>
+                                <option>Local Logistics</option>
+                            </select>
+                        </div>
+                         <div class="mb-3">
+                            <label class="form-label">Expected Delivery</label>
+                            <input type="date" class="form-control" required>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Dispatch Shipment</button>
+                            <a href="/Shipments" class="btn btn-light">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -4,31 +4,136 @@
     ViewData["Title"] = "Warehouses";
 }
 
-<div class="container mt-5">
-    <h2 class="text-primary mb-4">Storage Locations</h2>
-    <hr />
+<div class="container-bento py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 animate-enter">
+        <div>
+            <h2 class="fw-bold mb-0">Warehouse Hub</h2>
+            <p class="text-muted mb-0">Manage global distribution centers</p>
+        </div>
+        <div>
+            <a href="/CreateWarehouse" class="btn btn-primary btn-lg shadow-sm">
+                <i class="bi bi-building-add me-2"></i> Add Warehouse
+            </a>
+        </div>
+    </div>
 
-    <div class="row">
-        @if (Model.Warehouses != null && Model.Warehouses.Any())
-        {
-            @foreach (var warehouse in Model.Warehouses)
-            {
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm border-info h-100">
-                        <div class="card-body text-center">
-                            <i class="bi bi-box-seam display-4 text-info mb-3"></i>
-                            <h4 class="card-title fw-bold">@warehouse.Name</h4>
-                            <p class="card-text text-muted">@warehouse.Location</p>
-                        </div>
+    <!-- Stats Grid -->
+    <div class="bento-grid mb-5">
+        <!-- Global Count - Span 2 -->
+        <div class="card border-0 shadow-sm glass-panel bg-gradient-pink text-white span-col-2 animate-enter delay-1" style="background: linear-gradient(135deg, #ec4899 0%, #be185d 100%) !important;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="bg-white bg-opacity-25 rounded-circle p-2">
+                        <i class="bi bi-geo-alt-fill fs-4"></i>
                     </div>
+                     <span class="badge bg-white bg-opacity-25 border border-white border-opacity-25">Network</span>
                 </div>
-            }
-        }
-        else
-        {
-            <div class="col-12 text-center text-muted">
-                <p>No warehouses found.</p>
+                <h2 class="display-4 fw-bold mb-0">12</h2>
+                <small class="text-white text-opacity-75">Active Distribution Centers</small>
             </div>
-        }
+        </div>
+
+        <!-- Utilization -->
+        <div class="card border-0 shadow-sm glass-panel animate-enter delay-2">
+             <div class="card-body">
+                 <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-2">
+                        <i class="bi bi-archive fs-4"></i>
+                    </div>
+                     <span class="text-warning small fw-bold">Utilization</span>
+                </div>
+                <h2 class="fw-bold mb-0 text-dark">78%</h2>
+                <small class="text-muted">Storage usage</small>
+            </div>
+        </div>
+
+        <!-- Uptime -->
+        <div class="card border-0 shadow-sm glass-panel animate-enter delay-3">
+             <div class="card-body">
+                 <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="bg-success bg-opacity-10 text-success rounded-circle p-2">
+                        <i class="bi bi-activity fs-4"></i>
+                    </div>
+                     <span class="text-success small fw-bold">Operations</span>
+                </div>
+                <h2 class="fw-bold mb-0 text-dark">100%</h2>
+                <small class="text-muted">System uptime</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warehouses Filter & Table Widget -->
+    <div class="card shadow-sm border-0 glass-panel animate-enter delay-4 span-col-4">
+        <div class="card-body p-0">
+             <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                 <h5 class="fw-bold mb-0">Active Locations</h5>
+             </div>
+        
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3">Name</th>
+                            <th class="py-3">Location</th>
+                            <th class="py-3">Manager</th>
+                            <th class="py-3">Capacity</th>
+                            <th class="py-3">Status</th>
+                            <th class="text-end pe-4 py-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Warehouses)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                     <div class="d-flex align-items-center">
+                                        <div class="bg-light p-2 rounded me-3 text-secondary">
+                                            <i class="bi bi-building"></i>
+                                        </div>
+                                        <span class="fw-bold text-dark">@item.Name</span>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-light text-secondary border">@item.Location</span></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center small me-2 shadow-sm" style="width: 28px; height: 28px;">
+                                            @item.Manager.Substring(0,1)
+                                        </div>
+                                        <span class="small fw-bold text-dark">@item.Manager</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column" style="width: 120px;">
+                                        <div class="d-flex justify-content-between small mb-1">
+                                            <span class="text-muted">Usage</span>
+                                            <span class="fw-bold">@item.Utilization%</span>
+                                        </div>
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar @(item.Utilization > 90 ? "bg-danger" : "bg-success")" role="progressbar" style="width: @item.Utilization%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                 <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary rounded-pill px-3">Closed</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <form method="post" asp-page-handler="Delete" asp-route-id="@item.Id" onsubmit="return confirm('Delete this warehouse?');" class="d-inline">
+                                        <button class="btn btn-sm btn-outline-danger rounded-circle" title="Delete"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>

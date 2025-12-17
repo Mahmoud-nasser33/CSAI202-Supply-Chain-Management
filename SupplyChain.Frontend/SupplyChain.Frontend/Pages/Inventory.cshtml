@@ -1,0 +1,201 @@
+@page
+@model SupplyChain.Frontend.Pages.InventoryModel
+@{
+    ViewData["Title"] = "Inventory Management";
+}
+
+<div class="container-bento py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 animate-enter">
+        <div>
+            <h2 class="fw-bold mb-0">Internal Stock Control</h2>
+            <p class="text-muted mb-0">Live multi-warehouse tracking</p>
+        </div>
+        <div class="role-staff-admin-only">
+             <a href="/CreateInventory" class="btn btn-primary btn-lg shadow-sm">
+                 <i class="bi bi-plus-lg me-2"></i> Add Stock Entry
+             </a>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="bento-grid mb-5">
+        <!-- Total SKUs -->
+        <div class="card border-0 shadow-sm glass-panel animate-enter delay-1">
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <i class="bi bi-box-seam-fill text-primary" style="font-size: 3.5rem;"></i>
+                </div>
+                <h2 class="fw-bold mb-0">1,204</h2>
+                <small class="text-muted">Active SKUs</small>
+            </div>
+        </div>
+
+        <!-- Critical Low Stock -->
+        <div class="card border-0 shadow-sm glass-panel animate-enter delay-2">
+             <div class="card-body">
+                 <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="bg-danger bg-opacity-10 text-danger rounded-circle p-2">
+                        <i class="bi bi-exclamation-triangle fs-4"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold mb-0 text-danger">15</h2>
+                <small class="text-muted">Low stock alerts</small>
+            </div>
+        </div>
+
+        <!-- Valuation -->
+        <div class="card border-0 shadow-sm glass-panel animate-enter delay-3">
+             <div class="card-body">
+                 <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="bg-success bg-opacity-10 text-success rounded-circle p-2">
+                        <i class="bi bi-currency-dollar fs-4"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold mb-0 text-dark">$4.2M</h2>
+                <small class="text-muted">Total inventory value</small>
+            </div>
+        </div>
+        
+        <!-- Health Score -->
+         <div class="card border-0 shadow-sm glass-panel animate-enter delay-4">
+             <div class="card-body">
+                 <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="bg-info bg-opacity-10 text-info rounded-circle p-2">
+                        <i class="bi bi-activity fs-4"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold mb-0 text-dark">98%</h2>
+                <small class="text-muted">Stock accuracy</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Filter & Table Widget -->
+    <div class="card shadow-sm border-0 glass-panel animate-enter delay-5 span-col-4">
+        <div class="card-body p-0">
+             <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                 <h5 class="fw-bold mb-0">Stock List</h5>
+                 <div class="d-flex gap-2">
+                     <div class="input-group">
+                        <span class="input-group-text bg-light border-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" class="form-control border-0 bg-light" placeholder="Search inventory..." style="width: 250px;">
+                    </div>
+                 </div>
+             </div>
+        
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3">Item</th>
+                            <th class="py-3">Warehouse</th>
+                            <th class="py-3">Quantity</th>
+                            <th class="py-3">Status</th>
+                            <th class="text-end pe-4 py-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.InventoryList)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-gradient-light p-2 rounded me-3 shadow-sm">
+                                            <i class="bi bi-box-seam text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold text-dark d-block">@item.ProductName</span>
+                                             <small class="text-muted">ID: #@item.InventoryID</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-secondary"><i class="bi bi-building me-1"></i> @item.WarehouseName</td>
+                                <td class="fw-bold fs-5">@item.QuantityAvailable</td>
+                                <td>
+                                    @if (item.QuantityAvailable == 0)
+                                    {
+                                        <span class="badge badge-soft-danger rounded-pill px-3">Out of Stock</span>
+                                    }
+                                    else if (item.QuantityAvailable <= item.ReorderLevel)
+                                    {
+                                        <span class="badge badge-soft-warning rounded-pill px-3">Low Stock</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-soft-success rounded-pill px-3">In Stock</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="role-staff-admin-only">
+                                        <form method="post" asp-page-handler="Delete" asp-route-id="@item.InventoryID" onsubmit="return confirm('Remove this inventory item?');" class="d-inline">
+                                            <button class="btn btn-sm btn-outline-danger rounded-circle" title="Remove"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </div>
+                                    <div class="role-customer-only text-muted small">
+                                        View Only
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+             <div class="p-3 border-top">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center mb-0 pagination-sm">
+                        <li class="page-item disabled"><a class="page-link border-0 rounded-start" href="#">Previous</a></li>
+                        <li class="page-item active"><a class="page-link border-0" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link border-0" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link border-0 rounded-end" href="#">Next</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const user = sessionManager.getCurrentUser();
+        if (!user) return;
+
+        // Strict logical redirection for customers who try to access internal inventory
+        if (user.role === 'customer') {
+            notificationManager.showToast('Access restricted to internal staff.', 'error');
+            setTimeout(() => window.location.href = '/CustomerDashboard', 1000);
+            return;
+        }
+
+        const staffOnly = document.querySelectorAll('.role-staff-admin-only');
+        if (user.role === 'user' || user.role === 'admin') {
+            staffOnly.forEach(el => el.style.display = 'block');
+        } else {
+            staffOnly.forEach(el => el.style.display = 'none');
+        }
+
+        const searchInput = document.querySelector('input[placeholder="Search inventory..."]');
+        const tableRows = document.querySelectorAll('tbody tr');
+
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+
+                tableRows.forEach(row => {
+                    const text = row.innerText.toLowerCase();
+                    if(text.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+
+    // Protect this page
+    if (!sessionManager.isLoggedIn()) {
+        window.location.href = '/Login';
+    }
+</script>

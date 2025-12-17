@@ -1,0 +1,50 @@
+@page
+@model SupplyChain.Frontend.Pages.CreateWarehouseModel
+@{
+    ViewData["Title"] = "Add Warehouse";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-building-add"></i> Add New Warehouse</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Warehouse Name</label>
+                            <input type="text" class="form-control" placeholder="e.g. Cairo Distribution Center" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-control" placeholder="City, Country" required>
+                        </div>
+                         <div class="mb-3">
+                            <label class="form-label">Assigned Manager</label>
+                            <select class="form-select">
+                                <option>Ahmed Hassan</option>
+                                <option>Sarah Salem</option>
+                                <option>New Manager...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Type</label>
+                            <select class="form-select">
+                                <option>General Storage</option>
+                                <option>Cold Storage</option>
+                                <option>Distribution Hub</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Create Warehouse</button>
+                            <a href="/Warehouses" class="btn btn-light">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

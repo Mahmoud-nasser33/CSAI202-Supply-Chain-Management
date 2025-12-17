@@ -16,15 +16,40 @@
                         <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Select Product</label>
-                            <select asp-for="Order.ProductId" asp-items="Model.ProductOptions" class="form-select" required>
-                                <option value="">-- Choose a Product --</option>
+                            <label class="form-label fw-bold">Select Customer</label>
+                            <select class="form-select" required>
+                                <option value="">-- Select Customer --</option>
+                                <option>Industrial Solutions Ltd</option>
+                                <option>Global Tech Corp</option>
+                                <option>Retail Giant Inc</option>
+                                <option>Individual Client</option>
                             </select>
+                            <small class="text-muted">For Admin/Staff entry. Customers will have this pre-selected.</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label fw-bold">Select Product</label>
+                                <select asp-for="Order.ProductId" asp-items="Model.ProductOptions" class="form-select" required>
+                                    <option value="">-- Choose a Product --</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Quantity</label>
+                                <input asp-for="Order.Quantity" type="number" class="form-control" min="1" value="1" required />
+                            </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Quantity</label>
-                            <input asp-for="Order.Quantity" type="number" class="form-control" min="1" value="1" required />
+                            <label class="form-label fw-bold">Payment Method</label>
+                            <select class="form-select" required>
+                                <option value="">-- Choose Method --</option>
+                                <option>Bank Transfer</option>
+                                <option>Credit Card</option>
+                                <option>PayPal</option>
+                                <option>Net 30 Terms</option>
+                            </select>
                         </div>
 
                         <div class="d-grid gap-2 mt-4">

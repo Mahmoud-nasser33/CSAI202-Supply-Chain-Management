@@ -2,36 +2,184 @@
 @model SupplyChain.Frontend.Pages.LoginModel
 @{
     ViewData["Title"] = "Login";
+    Layout = null; // No layout for login page
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="card shadow-lg border-0 rounded-3">
-                <div class="card-header bg-primary text-white text-center py-3">
-                    <h3 class="mb-0"> Login</h3>
-                </div>
-                <div class="card-body p-4">
-                    <form method="post">
-                        <div class="form-floating mb-3">
-                            <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com" required>
-                            <label for="floatingInput">Email address</label>
-                        </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Silsila SCM</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
 
-                        <div class="form-floating mb-3">
-                            <input type="password" class="form-control" id="floatingPassword" placeholder="Password" required>
-                            <label for="floatingPassword">Password</label>
-                        </div>
-
-                        <div class="d-grid gap-2 mb-3">
-                            <button class="btn btn-primary btn-lg" type="submit">Sign In</button>
-                        </div>
-                    </form>
-                </div>
-                <div class="card-footer text-center bg-light">
-                    <small class="text-muted">Don't have an account? <a href="/Register" class="text-decoration-none">Create one</a></small>
+<div class="d-flex align-items-center justify-content-center min-vh-100" style="background-color: #f3f4f6;">
+    <div class="card border-0 shadow-lg rounded-4 p-4 animate-enter" style="max-width: 450px; width: 100%;">
+        <div class="card-body text-center">
+            
+            <!-- Logo/Icon -->
+            <div class="mb-4 d-inline-block">
+                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white shadow-sm" style="width: 80px; height: 80px;">
+                    <i class="bi bi-box-seam-fill" style="font-size: 2.5rem;"></i>
                 </div>
             </div>
+
+            <h2 class="fw-bold text-dark mb-1">Welcome Back</h2>
+            <p class="text-muted mb-4">Sign in to Silsila Supply Chain</p>
+
+            <form id="loginForm" class="text-start">
+                <!-- Role Selection -->
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Login As</label>
+                    <select id="roleSelect" class="form-select bg-light border-0 py-3" required>
+                        <option value="">Select Role...</option>
+                        <option value="admin">Administrator</option>
+                        <option value="user">Warehouse Staff</option>
+                        <option value="customer">Customer</option>
+                        <option value="supplier">Supplier</option>
+                    </select>
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Email address</label>
+                    <input type="email" id="emailInput" class="form-control bg-light border-0 py-3" placeholder="admin@silsila.com" required>
+                </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Password</label>
+                    <div class="input-group">
+                        <input type="password" id="passwordInput" class="form-control bg-light border-0 py-3" placeholder="••••••••••••" required>
+                        <button class="btn bg-light border-0" type="button" id="togglePassword">
+                            <i class="bi bi-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="rememberMe">
+                        <label class="form-check-label small text-muted" for="rememberMe">Remember me</label>
+                    </div>
+                    <a href="#" class="small fw-bold text-primary text-decoration-none">Forgot Password?</a>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorMessage" class="alert alert-danger d-none" role="alert"></div>
+
+                <!-- Submit Button -->
+                <div class="d-grid mb-4">
+                    <button type="submit" id="loginBtn" class="btn btn-primary rounded-pill py-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                        <span id="btnText">Sign In</span>
+                        <i class="bi bi-arrow-right" id="btnIcon"></i>
+                        <span class="spinner-border spinner-border-sm d-none" id="btnSpinner"></span>
+                    </button>
+                </div>
+
+                <div class="border-top pt-4 text-center">
+                    <small class="text-muted">Don't have an account? <a href="/Register" class="text-primary fw-bold text-decoration-none">Create Account</a></small>
+                </div>
+            </form>
         </div>
     </div>
+    
+    <div class="position-fixed bottom-0 w-100 text-center pb-3">
+        <small class="text-muted">&copy; 2025 Silsila Supply Chain. Secure System.</small>
+    </div>
 </div>
+
+<script src="~/js/session-manager.js"></script>
+<script>
+    // Password visibility toggle
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('passwordInput');
+        const toggleIcon = document.getElementById('toggleIcon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('bi-eye');
+            toggleIcon.classList.add('bi-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('bi-eye-slash');
+            toggleIcon.classList.add('bi-eye');
+        }
+    });
+
+    // Form submission
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const role = document.getElementById('roleSelect').value;
+        const email = document.getElementById('emailInput').value;
+        const password = document.getElementById('passwordInput').value;
+        const rememberMe = document.getElementById('rememberMe').checked;
+        
+        const errorMessage = document.getElementById('errorMessage');
+        const loginBtn = document.getElementById('loginBtn');
+        const btnText = document.getElementById('btnText');
+        const btnIcon = document.getElementById('btnIcon');
+        const btnSpinner = document.getElementById('btnSpinner');
+        
+        // Validate
+        if (!role) {
+            errorMessage.textContent = 'Please select a role';
+            errorMessage.classList.remove('d-none');
+            return;
+        }
+        
+        // Show loading
+        loginBtn.disabled = true;
+        btnText.textContent = 'Signing in...';
+        btnIcon.classList.add('d-none');
+        btnSpinner.classList.remove('d-none');
+        errorMessage.classList.add('d-none');
+        
+        // Simulate authentication (replace with actual API call later)
+        setTimeout(() => {
+            // Mock user data based on role
+            const userData = {
+                name: role === 'admin' ? 'Admin User' : 
+                      role === 'user' ? 'John Warehouse' :
+                      role === 'customer' ? 'Jane Customer' :
+                      'Supplier Co.',
+                email: email,
+                role: role
+            };
+            
+            // Login using session manager
+            sessionManager.login(userData);
+            
+            // Redirect to appropriate dashboard
+            window.location.href = sessionManager.getDashboardUrl(role);
+        }, 1000);
+    });
+
+    // Auto-fill based on role selection (for demo)
+    document.getElementById('roleSelect').addEventListener('change', function() {
+        const role = this.value;
+        const emailInput = document.getElementById('emailInput');
+        const passwordInput = document.getElementById('passwordInput');
+        
+        const demoCredentials = {
+            'admin': { email: 'admin@silsila.com', password: 'admin123' },
+            'user': { email: 'user@silsila.com', password: 'user123' },
+            'customer': { email: 'customer@silsila.com', password: 'customer123' },
+            'supplier': { email: 'supplier@silsila.com', password: 'supplier123' }
+        };
+        
+        if (role && demoCredentials[role]) {
+            emailInput.value = demoCredentials[role].email;
+            passwordInput.value = demoCredentials[role].password;
+        }
+    });
+</script>
+
+</body>
+</html>

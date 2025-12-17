@@ -4,42 +4,43 @@
     ViewData["Title"] = "Register";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-dark text-white text-center">
-                    <h3>Create New Account</h3>
+<div class="d-flex align-items-center justify-content-center min-vh-100" style="background-color: #f3f4f6;">
+    <div class="card border-0 shadow-lg rounded-3 animate-enter" style="max-width: 500px; width: 100%; overflow: hidden;">
+        
+        <!-- Dark Header -->
+        <div class="card-header bg-dark text-white text-center py-5" style="background-color: #1f2937 !important;">
+            <h2 class="fw-bold mb-0">Create New Account</h2>
+        </div>
+
+        <div class="card-body p-5 bg-white">
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-secondary">Full Name</label>
+                    <input type="text" class="form-control p-3" placeholder="John Doe">
                 </div>
-                <div class="card-body p-4">
-                    <form method="post">
-                        <div class="mb-3">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" class="form-control" placeholder="John Doe" required />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Email Address</label>
-                            <input type="email" class="form-control" placeholder="name@example.com" required />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <input type="password" class="form-control" placeholder="******" required />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" placeholder="******" required />
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100 btn-lg">Register Now</button>
-                    </form>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-secondary">Email Address</label>
+                    <input type="email" class="form-control p-3" placeholder="name@example.com">
                 </div>
-                <div class="card-footer text-center">
-                    <small>Already have an account? <a href="/Login">Login here</a></small>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-secondary">Password</label>
+                    <input type="password" class="form-control p-3" placeholder="••••••">
                 </div>
-            </div>
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-secondary">Confirm Password</label>
+                    <input type="password" class="form-control p-3" placeholder="••••••">
+                </div>
+
+                <div class="d-grid mb-4">
+                    <button type="submit" class="btn btn-primary btn-lg fw-bold py-3 shadow-sm" style="background-color: #10b981; border: none;">
+                        Register Now
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="card-footer bg-light text-center py-4 border-top-0">
+             <span class="text-muted">Already have an account? <a href="/Login" class="text-primary fw-bold text-decoration-none">Login here</a></span>
         </div>
     </div>
 </div>

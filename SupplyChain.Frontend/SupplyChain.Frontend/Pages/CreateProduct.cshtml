@@ -18,14 +18,32 @@
                             <input asp-for="Product.Name" class="form-control" placeholder="e.g. Dell Laptop" required />
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Price ($)</label>
-                            <input asp-for="Product.Price" type="number" class="form-control" placeholder="0.00" required />
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Price ($)</label>
+                                <input asp-for="Product.Price" type="number" step="0.01" class="form-control" placeholder="0.00" required />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Stock Quantity</label>
+                                <input asp-for="Product.StockQuantity" type="number" class="form-control" placeholder="0" required />
+                            </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Stock Quantity</label>
-                            <input asp-for="Product.StockQuantity" type="number" class="form-control" placeholder="0" required />
+                            <label class="form-label fw-bold">Category</label>
+                            <select asp-for="Product.Category" class="form-select" required>
+                                <option value="">-- Select Category --</option>
+                                <option>Electronics</option>
+                                <option>Furniture</option>
+                                <option>Industrial</option>
+                                <option>Raw Materials</option>
+                                <option>Automotive</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Product SKU (Internal)</label>
+                            <input asp-for="Product.SKU" class="form-control" placeholder="e.g. LAP-001" required />
                         </div>
 
                         <div class="d-grid gap-2">

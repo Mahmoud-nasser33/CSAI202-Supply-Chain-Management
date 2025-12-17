@@ -1,37 +1,73 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
 
 namespace SupplyChain.Frontend.Pages
 {
     public class ShipmentsModel : PageModel
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-
         public List<ShipmentDto> Shipments { get; set; } = new List<ShipmentDto>();
 
-        public ShipmentsModel(IHttpClientFactory httpClientFactory)
+        public IActionResult OnPostDelete(int id)
         {
-            _httpClientFactory = httpClientFactory;
+            // MOCK BEHAVIOR: Simulate Deletion
+            // In a real app, we would call the API: await client.DeleteAsync($"api/Shipments/{id}");
+            
+            // For now, just reload the page to show it "worked" (UI will reset to mock data, but action is handled)
+            return RedirectToPage();
         }
 
-        public async Task OnGetAsync()
+        public void OnGet()
         {
-            var client = _httpClientFactory.CreateClient("BackendApi");
-            try
+            // High-Fidelity Mock Data based on User Request
+            Shipments = new List<ShipmentDto>
             {
-                var result = await client.GetFromJsonAsync<List<ShipmentDto>>("api/Shipments");
-                if (result != null)
+                new ShipmentDto
                 {
-                    Shipments = result;
+                    Id = 1,
+                    OriginWarehouse = "Central Hub",
+                    DestinationAddress = "Springfield Distribution Center",
+                    Status = "In Transit",
+                    EstimatedArrival = new DateTime(2025, 12, 19),
+                    Progress = 65, // Percentage for progress bar
+                    CurrentStep = 2, // 0: Processing, 1: Shipped, 2: In Transit, 3: Delivered
+                    Items = new List<ShipmentItemDto>
+                    {
+                        new ShipmentItemDto { ProductName = "Laptop", Quantity = 1 },
+                        new ShipmentItemDto { ProductName = "Wireless Mouse", Quantity = 2 }
+                    }
+                },
+                new ShipmentDto
+                {
+                    Id = 2,
+                    OriginWarehouse = "West Coast Depot",
+                    DestinationAddress = "Shelbyville Branch",
+                    Status = "Delivered",
+                    EstimatedArrival = DateTime.Now.AddDays(-1),
+                    Progress = 100,
+                    CurrentStep = 3,
+                    Items = new List<ShipmentItemDto>
+                    {
+                        new ShipmentItemDto { ProductName = "4K Monitor", Quantity = 10 }
+                    }
+                },
+                new ShipmentDto
+                {
+                    Id = 3,
+                    OriginWarehouse = "Euro Hub",
+                    DestinationAddress = "London Store",
+                    Status = "Processing",
+                    EstimatedArrival = DateTime.Now.AddDays(5),
+                    Progress = 15,
+                    CurrentStep = 0,
+                    Items = new List<ShipmentItemDto>
+                    {
+                        new ShipmentItemDto { ProductName = "Gaming Keyboard", Quantity = 50 },
+                        new ShipmentItemDto { ProductName = "Headset", Quantity = 50 }
+                    }
                 }
-            }
-            catch
-            {
-                Shipments = new List<ShipmentDto>();
-            }
+            };
         }
     }
 
@@ -42,6 +78,8 @@ namespace SupplyChain.Frontend.Pages
         public string DestinationAddress { get; set; }
         public string Status { get; set; }
         public DateTime EstimatedArrival { get; set; }
+        public int Progress { get; set; }
+        public int CurrentStep { get; set; }
         public List<ShipmentItemDto> Items { get; set; }
     }
 
