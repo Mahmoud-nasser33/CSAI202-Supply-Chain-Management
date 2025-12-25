@@ -1,32 +1,31 @@
 @page
 @model SupplyChain.Frontend.Pages.UsersModel
 @{
-    ViewData["Title"] = "User Management";
+    ViewData["Title"] = "User Resource Administration";
 }
 
 <div class="container-bento py-4">
     <div class="d-flex justify-content-between align-items-center mb-4 animate-enter">
         <div>
-            <h2 class="fw-bold mb-0">System Users</h2>
+            <h2 class="fw-bold mb-0">System Governance Users</h2>
             <p class="text-muted mb-0">Access control & permissions</p>
         </div>
         <div>
             <a href="/CreateUser" class="btn btn-primary btn-lg shadow-sm">
-                <i class="bi bi-person-plus-fill me-2"></i> Add System User
+                <i class="bi bi-person-plus-fill me-2"></i> Add System Governance User
             </a>
         </div>
     </div>
 
-    <!-- User List Widget -->
     <div class="card shadow-sm border-0 glass-panel animate-enter delay-1 span-col-4">
         <div class="card-body p-0">
              <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
                  <h5 class="fw-bold mb-0">Registered Users</h5>
                  <div class="d-flex gap-2">
-                     <span class="badge bg-light text-dark border">Total: @Model.UserList.Count</span>
+                     <span class="badge bg-light text-dark border">Total: @Model.Users.Count</span>
                  </div>
              </div>
-        
+
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="bg-light">
@@ -40,39 +39,43 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model.UserList)
+                        @foreach (var user in Model.Users)
                         {
                             <tr>
-                                <td class="ps-4 text-muted">#@item.UserID</td>
+                                <td class="ps-4 text-muted">#@user.Id</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="bg-gradient-light rounded-circle d-flex align-items-center justify-content-center me-2 shadow-sm fw-bold border" style="width: 32px; height: 32px;">
-                                            @item.Username.Substring(0,1).ToUpper()
+                                            @(string.IsNullOrEmpty(user.Name) ? "?" : user.Name.Substring(0,1).ToUpper())
                                         </div>
-                                        <span class="fw-bold">@item.Username</span>
+                                        <span class="fw-bold">@user.Name</span>
                                     </div>
                                 </td>
-                                <td>@item.Email</td>
+                                <td>@user.Email</td>
                                 <td>
-                                    @if (item.Role == "Administrator")
+                                    @if (user.RoleName == "Admin")
                                     {
                                         <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3">Admin</span>
                                     }
-                                    else if (item.Role == "Manager")
+                                    else if (user.RoleName == "Warehouse Manager")
                                     {
                                         <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3">Manager</span>
                                     }
+                                    else if (user.RoleName == "Supplier")
+                                    {
+                                        <span class="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle rounded-pill px-3">Supplier</span>
+                                    }
                                     else
                                     {
-                                        <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill px-3">Staff</span>
+                                        <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill px-3">@user.RoleName</span>
                                     }
                                 </td>
                                 <td><span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2">Active</span></td>
                                 <td>
                                     <div class="d-flex gap-2">
                                         <button class="btn btn-sm btn-outline-primary rounded-circle"><i class="bi bi-pencil"></i></button>
-                                        <form method="post" asp-page-handler="Delete" asp-route-id="@item.UserID" onsubmit="return confirm('Deactivate this user?');">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle"><i class="bi bi-person-x"></i></button>
+                                        <form method="post" asp-page-handler="Delete" asp-route-id="@user.Id">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle"><i class="bi bi-trash"></i></button>
                                         </form>
                                     </div>
                                 </td>

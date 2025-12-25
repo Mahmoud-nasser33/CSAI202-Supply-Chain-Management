@@ -18,19 +18,18 @@
         </div>
     </div>
 
-    <!-- Shipments Grid -->
     <div class="bento-grid">
         @foreach (var shipment in Model.Shipments)
         {
             <div class="card border-0 shadow-sm glass-panel span-col-2 animate-enter delay-1 h-100">
                 <div class="card-header bg-transparent border-bottom-0 pt-0 px-0 d-flex justify-content-between align-items-center mb-2">
                     <div class="d-flex align-items-center">
-                        <div class="bg-gradient-orange text-white rounded-circle p-2 me-3 shadow-sm" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-truck fs-5"></i>
+                        <div class="icon-container-circle bg-gradient-orange text-white shadow-sm me-3" style="width: 48px; height: 48px;">
+                            <i class="bi bi-truck"></i>
                         </div>
                         <div>
-                            <h5 class="fw-bold mb-0">#@shipment.Id</h5>
-                            <small class="text-muted"><i class="bi bi-geo-alt-fill"></i> @shipment.OriginWarehouse &rarr; @shipment.DestinationAddress</small>
+                            <h5 class="fw-bold mb-0">#@shipment.ShipmentID</h5>
+                            <small class="text-muted"><i class="bi bi-geo-alt-fill"></i> @shipment.WarehouseName &rarr; @shipment.CustomerName</small>
                         </div>
                     </div>
                     <div>
@@ -43,20 +42,19 @@
                         }
                     </div>
                 </div>
-                
+
                 <div class="card-body px-0 pb-0">
-                    <!-- Progress Stepper -->
+
                     <div class="position-relative my-4 mx-2">
                         <div class="progress bg-light" style="height: 6px;">
                             <div class="progress-bar bg-gradient-orange" role="progressbar" style="width: @shipment.Progress%;" aria-valuenow="@shipment.Progress" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
-                        
-                        <!-- Dots -->
-                        <div class="position-absolute top-0 start-0 translate-middle p-1 bg-white rounded-circle border border-2 @(shipment.CurrentStep >= 0 ? "border-primary" : "border-secondary")" style="margin-top: 3px;"></div>
-                        <div class="position-absolute top-0 start-33 translate-middle p-1 bg-white rounded-circle border border-2 @(shipment.CurrentStep >= 1 ? "border-primary" : "border-secondary")" style="margin-top: 3px; left: 33%;"></div>
-                        <div class="position-absolute top-0 start-66 translate-middle p-1 bg-white rounded-circle border border-2 @(shipment.CurrentStep >= 2 ? "border-primary" : "border-secondary")" style="margin-top: 3px; left: 66%;"></div>
-                        <div class="position-absolute top-0 start-100 translate-middle p-1 bg-white rounded-circle border border-2 @(shipment.CurrentStep >= 3 ? "border-success" : "border-secondary")" style="margin-top: 3px;"></div>
-                        
+
+                        <div class="position-absolute top-0 start-0 translate-middle p-1 bg-white rounded-circle border border-2 @(shipment.Progress >= 20 ? "border-primary" : "border-secondary")" style="margin-top: 3px;"></div>
+                        <div class="position-absolute top-0 start-33 translate-middle p-1 bg-white rounded-circle border border-2 @(shipment.Progress >= 40 ? "border-primary" : "border-secondary")" style="margin-top: 3px; left: 33%;"></div>
+                        <div class="position-absolute top-0 start-66 translate-middle p-1 bg-white rounded-circle border border-2 @(shipment.Progress >= 60 ? "border-primary" : "border-secondary")" style="margin-top: 3px; left: 66%;"></div>
+                        <div class="position-absolute top-0 start-100 translate-middle p-1 bg-white rounded-circle border border-2 @(shipment.Progress >= 100 ? "border-success" : "border-secondary")" style="margin-top: 3px;"></div>
+
                         <div class="d-flex justify-content-between mt-3 text-muted small fw-bold">
                             <span>Processing</span>
                             <span>Shipped</span>
@@ -70,7 +68,7 @@
                             <div class="col-6 border-end">
                                 <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Arrival</small>
                                 <p class="mb-0 fw-bold @(shipment.Status == "Delivered" ? "text-success" : "text-dark")">
-                                    @shipment.EstimatedArrival.ToString("MMM dd")
+                                    @(shipment.Shipment_Date?.ToString("MMM dd") ?? "TBD")
                                 </p>
                             </div>
                             <div class="col-6 ps-3">
@@ -94,9 +92,9 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="text-end mt-3 role-staff-admin-only">
-                         <form method="post" asp-page-handler="Delete" asp-route-id="@shipment.Id" onsubmit="return confirm('Delete?');" class="d-inline">
+                         <form method="post" asp-page-handler="Delete" asp-route-id="@shipment.ShipmentID" class="d-inline">
                             <button type="submit" class="btn btn-sm btn-link text-danger text-decoration-none">Cancel Shipment</button>
                         </form>
                     </div>
@@ -107,21 +105,6 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const user = sessionManager.getCurrentUser();
-        if (!user) return;
-
-        const staffOnly = document.querySelectorAll('.role-staff-admin-only');
-        const title = document.querySelector('h2');
-        const desc = document.querySelector('p.text-muted');
-
-        if (user.role === 'customer') {
-            if (title) title.textContent = 'My Deliveries';
-            if (desc) desc.textContent = 'Live tracking for your active orders.';
-            staffOnly.forEach(el => el.style.display = 'none');
-        } else {
-            staffOnly.forEach(el => el.style.display = 'block');
-        }
     });
 
     // Protect this page

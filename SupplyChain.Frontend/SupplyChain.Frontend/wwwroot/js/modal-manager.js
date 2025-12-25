@@ -1,4 +1,4 @@
-// Modal Manager - Create and manage modal dialogs
+
 class ModalManager {
     constructor() {
         this.modals = new Map();
@@ -6,42 +6,88 @@ class ModalManager {
     }
 
     init() {
-        // Create modal container if it doesn't exist
-        if (!document.getElementById('modalContainer')) {
-            const container = document.createElement('div');
-            container.id = 'modalContainer';
-            document.body.appendChild(container);
+
+        const setupContainer = () => {
+            if (!document.getElementById('modalContainer')) {
+                const container = document.createElement('div');
+                container.id = 'modalContainer';
+                document.body.appendChild(container);
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupContainer);
+        } else {
+            setupContainer();
         }
     }
 
-    // Create a modal
     createModal(id, title, content, options = {}) {
-        const modalHtml = `
-            <div class="modal fade" id="${id}" tabindex="-1" aria-labelledby="${id}Label" aria-hidden="true">
-                <div class="modal-dialog ${options.size || 'modal-lg'}">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="${id}Label">${title}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            ${content}
-                        </div>
-                        ${options.footer !== false ? `
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-primary" id="${id}ConfirmBtn">
-                                ${options.confirmText || 'Confirm'}
-                            </button>
-                        </div>
-                        ` : ''}
-                    </div>
-                </div>
-            </div>
-        `;
+        const modalEl = document.createElement('div');
+        modalEl.className = 'modal fade';
+        modalEl.id = id;
+        modalEl.setAttribute('tabindex', '-1');
+        modalEl.setAttribute('aria-labelledby', `${id}Label`);
+        modalEl.setAttribute('aria-hidden', 'true');
+        modalEl.setAttribute('role', 'dialog');
+
+        const dialog = document.createElement('div');
+        dialog.className = `modal-dialog ${options.size || 'modal-lg'}`;
+
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content';
+
+        const header = document.createElement('div');
+        header.className = 'modal-header';
+        const titleEl = document.createElement('h5');
+        titleEl.className = 'modal-title';
+        titleEl.id = `${id}Label`;
+        titleEl.textContent = title;
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'btn-close';
+        closeBtn.setAttribute('data-bs-dismiss', 'modal');
+        closeBtn.setAttribute('aria-label', 'Close');
+        header.appendChild(titleEl);
+        header.appendChild(closeBtn);
+
+        const body = document.createElement('div');
+        body.className = 'modal-body';
+
+        if (content instanceof Node) {
+            body.appendChild(content);
+        } else if (typeof content === 'string') {
+
+            const textNode = document.createTextNode(content);
+            body.appendChild(textNode);
+        }
+
+        modalContent.appendChild(header);
+        modalContent.appendChild(body);
+
+        if (options.footer !== false) {
+            const footer = document.createElement('div');
+            footer.className = 'modal-footer';
+            const cancelBtn = document.createElement('button');
+            cancelBtn.type = 'button';
+            cancelBtn.className = 'btn btn-secondary';
+            cancelBtn.setAttribute('data-bs-dismiss', 'modal');
+            cancelBtn.textContent = 'Cancel';
+            const confirmBtn = document.createElement('button');
+            confirmBtn.type = 'button';
+            confirmBtn.className = 'btn btn-primary';
+            confirmBtn.id = `${id}ConfirmBtn`;
+            confirmBtn.textContent = options.confirmText || 'Confirm';
+            footer.appendChild(cancelBtn);
+            footer.appendChild(confirmBtn);
+            modalContent.appendChild(footer);
+        }
+
+        dialog.appendChild(modalContent);
+        modalEl.appendChild(dialog);
 
         const container = document.getElementById('modalContainer');
-        container.insertAdjacentHTML('beforeend', modalHtml);
+        container.appendChild(modalEl);
 
         const modalElement = document.getElementById(id);
         const modal = new bootstrap.Modal(modalElement);
@@ -50,56 +96,85 @@ class ModalManager {
         return modal;
     }
 
-    // Show modal
     show(id) {
         const modal = this.modals.get(id);
         if (modal) modal.show();
     }
 
-    // Hide modal
     hide(id) {
         const modal = this.modals.get(id);
         if (modal) modal.hide();
     }
 
-    // Confirmation dialog
     confirm(title, message, onConfirm) {
         const id = 'confirmModal_' + Date.now();
-        const content = `<p>${message}</p>`;
+        const messageEl = document.createElement('p');
+        messageEl.textContent = message;
 
-        this.createModal(id, title, content, { size: 'modal-sm' });
+        this.createModal(id, title, messageEl, { size: 'modal-sm' });
 
+        const modalElement = document.getElementById(id);
         const confirmBtn = document.getElementById(id + 'ConfirmBtn');
-        confirmBtn.addEventListener('click', () => {
-            if (onConfirm) onConfirm();
-            this.hide(id);
-            this.destroy(id);
-        });
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', () => {
+                if (onConfirm) onConfirm();
+                this.hide(id);
+                this.destroy(id);
+            });
+
+            if (modalElement) {
+                modalElement.addEventListener('shown.bs.modal', () => {
+                    const firstInput = modalElement.querySelector('input, textarea, select, button');
+                    if (firstInput) firstInput.focus();
+                });
+
+                modalElement.addEventListener('hidden.bs.modal', () => {
+
+                    const trigger = document.activeElement;
+                    if (trigger && trigger.hasAttribute('data-bs-toggle')) {
+                        trigger.focus();
+                    }
+                });
+            }
+        }
 
         this.show(id);
     }
 
-    // Alert dialog
     alert(title, message) {
         const id = 'alertModal_' + Date.now();
-        const content = `<p>${message}</p>`;
+        const messageEl = document.createElement('p');
+        messageEl.textContent = message;
 
-        this.createModal(id, title, content, {
+        this.createModal(id, title, messageEl, {
             size: 'modal-sm',
             footer: false
         });
 
         const modalElement = document.getElementById(id);
-        modalElement.querySelector('.modal-body').innerHTML += `
-            <div class="text-end mt-3">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
-            </div>
-        `;
+        if (modalElement) {
+            const modalBody = modalElement.querySelector('.modal-body');
+            if (modalBody) {
+                const buttonDiv = document.createElement('div');
+                buttonDiv.className = 'text-end mt-3';
+                const okButton = document.createElement('button');
+                okButton.type = 'button';
+                okButton.className = 'btn btn-primary';
+                okButton.setAttribute('data-bs-dismiss', 'modal');
+                okButton.textContent = 'OK';
+                buttonDiv.appendChild(okButton);
+                modalBody.appendChild(buttonDiv);
+            }
+
+            modalElement.addEventListener('shown.bs.modal', () => {
+                const okBtn = modalElement.querySelector('.btn-primary');
+                if (okBtn) okBtn.focus();
+            });
+        }
 
         this.show(id);
     }
 
-    // Destroy modal
     destroy(id) {
         const modal = this.modals.get(id);
         if (modal) {
@@ -111,10 +186,8 @@ class ModalManager {
     }
 }
 
-// Initialize modal manager
 const modalManager = new ModalManager();
 
-// Export
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = ModalManager;
 }

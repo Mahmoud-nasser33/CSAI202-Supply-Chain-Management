@@ -1,7 +1,7 @@
 ﻿@page
 @model SupplyChain.Frontend.Pages.CreateProductModel
 @{
-    ViewData["Title"] = "Add Product";
+    ViewData["Title"] = "Register Inventory Item";
 }
 
 <div class="container mt-5">
@@ -31,19 +31,29 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Category</label>
-                            <select asp-for="Product.Category" class="form-select" required>
+                            <select asp-for="Product.CategoryID" class="form-select" required>
                                 <option value="">-- Select Category --</option>
-                                <option>Electronics</option>
-                                <option>Furniture</option>
-                                <option>Industrial</option>
-                                <option>Raw Materials</option>
-                                <option>Automotive</option>
+                                @foreach (var cat in Model.Categories)
+                                {
+                                    <option value="@cat.CategoryID">@cat.Name</option>
+                                }
                             </select>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Product SKU (Internal)</label>
-                            <input asp-for="Product.SKU" class="form-control" placeholder="e.g. LAP-001" required />
+                            <label class="form-label fw-bold">Supplier</label>
+                            <select asp-for="Product.SupplierID" class="form-select" required>
+                                <option value="">-- Select Supplier --</option>
+                                @foreach (var sup in Model.Suppliers)
+                                {
+                                    <option value="@sup.Id">@sup.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Description</label>
+                            <textarea asp-for="Product.Description" class="form-control" rows="3" placeholder="Product details..."></textarea>
                         </div>
 
                         <div class="d-grid gap-2">

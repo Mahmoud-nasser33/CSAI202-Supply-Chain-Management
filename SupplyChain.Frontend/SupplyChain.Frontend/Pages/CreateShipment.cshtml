@@ -15,23 +15,27 @@
                     <form method="post">
                         <div class="mb-3">
                             <label class="form-label">Order ID</label>
-                            <input type="text" class="form-control" placeholder="e.g. ORD-2025-001" required>
+                            <input asp-for="Shipment.OrderID" type="number" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Destination</label>
-                            <input type="text" class="form-control" placeholder="e.g. Cairo Branch" required>
+                            <label class="form-label">Warehouse ID</label>
+                            <input asp-for="Shipment.WarehouseID" type="number" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Carrier</label>
-                            <select class="form-select">
-                                <option>FedEx</option>
-                                <option>DHL</option>
-                                <option>Local Logistics</option>
+                            <label class="form-label">Status</label>
+                            <select asp-for="Shipment.Status" class="form-select">
+                                <option>Preparing</option>
+                                <option>In Transit</option>
+                                <option>Delivered</option>
                             </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Carrier (Shipped Via)</label>
+                            <input asp-for="Shipment.Shipped_Via" class="form-control" placeholder="e.g. DHL, FedEx" required>
                         </div>
                          <div class="mb-3">
                             <label class="form-label">Expected Delivery</label>
-                            <input type="date" class="form-control" required>
+                            <input asp-for="Shipment.Shipment_Date" type="date" class="form-control" required>
                         </div>
 
                         <div class="d-grid gap-2">

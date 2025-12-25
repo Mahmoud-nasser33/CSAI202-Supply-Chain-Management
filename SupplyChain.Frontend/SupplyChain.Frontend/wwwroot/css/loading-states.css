@@ -1,6 +1,4 @@
-/* Loading States CSS */
 
-/* Global Loading Overlay */
 .loading-overlay {
     position: fixed;
     top: 0;
@@ -50,7 +48,6 @@
     font-size: 1.1rem;
 }
 
-/* Skeleton Loader */
 .skeleton-loader {
     height: 20px;
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
@@ -73,7 +70,6 @@
     }
 }
 
-/* Loading Shimmer Effect */
 .loading-shimmer {
     position: relative;
     overflow: hidden;
@@ -103,14 +99,12 @@
     }
 }
 
-/* Button Loading States */
 .btn.loading {
     position: relative;
     pointer-events: none;
     opacity: 0.7;
 }
 
-/* Progress Bar Enhancements */
 .progress {
     background-color: #e9ecef;
     border-radius: 0.5rem;
@@ -121,7 +115,6 @@
     transition: width 0.3s ease;
 }
 
-/* Empty State Styles */
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
@@ -151,7 +144,6 @@
     margin-top: 1rem;
 }
 
-/* Error State Styles */
 .error-state {
     background: #fef2f2;
     border: 1px solid #fecaca;
@@ -171,7 +163,6 @@
     font-weight: 500;
 }
 
-/* Success State */
 .success-state {
     background: #f0fdf4;
     border: 1px solid #bbf7d0;
@@ -186,7 +177,6 @@
     margin-right: 0.5rem;
 }
 
-/* Loading Card Placeholder */
 .card-loading {
     min-height: 200px;
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
@@ -195,7 +185,6 @@
     border-radius: 0.5rem;
 }
 
-/* Pulse Animation */
 @keyframes pulse {
 
     0%,
@@ -212,7 +201,6 @@
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Fade In Animation */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -229,7 +217,6 @@
     animation: fadeIn 0.3s ease-in-out;
 }
 
-/* Spinner Sizes */
 .spinner-sm {
     width: 1rem;
     height: 1rem;

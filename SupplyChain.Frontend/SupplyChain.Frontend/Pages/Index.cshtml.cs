@@ -1,6 +1,8 @@
+// Defines the Index.cshtml class/logic for the Supply Chain system.
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Net.Http.Json;
-using SupplyChain.Frontend.Pages; 
+using SupplyChain.Frontend.Pages;
+using SupplyChain.Backend.Models;
 
 namespace SupplyChain.Frontend.Pages
 {
@@ -13,36 +15,40 @@ namespace SupplyChain.Frontend.Pages
             _httpClientFactory = httpClientFactory;
         }
 
-       
-        public int ProductCount { get; set; } = 0;
-        public int OrderCount { get; set; } = 0;
-        public decimal InventoryValue { get; set; } = 0;
+        public DashboardSummaryDto Summary { get; set; } = new();
 
         public async Task OnGetAsync()
         {
-            var client = _httpClientFactory.CreateClient("BackendApi");
+            HttpClient client = _httpClientFactory.CreateClient("BackendApi");
 
             try
             {
-             
-                var products = await client.GetFromJsonAsync<List<ProductDto>>("api/Products");
-                if (products != null)
+                var summary = await client.GetFromJsonAsync<DashboardSummaryDto>("api/DashboardSummary");
+                if (summary != null)
                 {
-                    ProductCount = products.Count;
-                    InventoryValue = products.Sum(p => p.Price * p.StockQuantity);
-                }
-
-                
-                var orders = await client.GetFromJsonAsync<List<dynamic>>("api/Orders");
-                if (orders != null)
-                {
-                    OrderCount = orders.Count;
+                    Summary = summary;
                 }
             }
             catch (Exception)
             {
-               
+
             }
+        }
+
+        public class DashboardSummaryDto
+        {
+            public int ProductCount { get; set; }
+            public int OrderCount { get; set; }
+            public decimal TotalRevenue { get; set; }
+            public int LowStockCount { get; set; }
+            public List<ActivityItemDto> RecentActivity { get; set; } = new();
+        }
+
+        public class ActivityItemDto
+        {
+            public string Type { get; set; } = string.Empty;
+            public string Description { get; set; } = string.Empty;
+            public DateTime Date { get; set; }
         }
     }
 }

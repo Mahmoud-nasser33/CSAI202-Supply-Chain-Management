@@ -1,38 +1,57 @@
 @page
 @model SupplyChain.Frontend.Pages.CreateSupplierModel
 @{
-    ViewData["Title"] = "Add Supplier";
+    ViewData["Title"] = "Onboard Strategic Supplier";
 }
 
-<div class="container mt-5">
+<div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Add New Supplier</h3>
+        <div class="col-md-8">
+            <div class="card border-0 shadow-lg glass-panel animate-enter">
+                <div class="card-header bg-success bg-gradient text-white py-3 border-0">
+                    <h3 class="card-title mb-0 fw-bold"><i class="bi bi-patch-plus-fill me-2"></i> Register New Partnership</h3>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <form method="post">
-                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Supplier Name</label>
-                            <input asp-for="Supplier.Name" class="form-control" required placeholder="e.g. MegaCorp" />
+                        <div class="mb-4">
+                            <label class="form-label fw-bold"><i class="bi bi-buildings me-1 text-primary"></i> Company Name</label>
+                            <input asp-for="Supplier.Name" class="form-control form-control-lg border-2 shadow-sm" placeholder="e.g. Global Logistics Inc." required />
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Contact Info (Email)</label>
-                            <input asp-for="Supplier.ContactInfo" type="email" class="form-control" required placeholder="contact@example.com" />
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold"><i class="bi bi-envelope-at me-1 text-info"></i> Contact Email</label>
+                                <input asp-for="Supplier.Email" type="email" class="form-control border-2 shadow-sm" placeholder="contact@company.com" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold"><i class="bi bi-telephone me-1 text-success"></i> Phone / Contact Info</label>
+                                <input asp-for="Supplier.Contact_Info" class="form-control border-2 shadow-sm" placeholder="+1..." />
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Address</label>
-                            <textarea asp-for="Supplier.Address" class="form-control" rows="3" required placeholder="123 Business Rd"></textarea>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold"><i class="bi bi-clock-history me-1 text-warning"></i> Est. Lead Time (Days)</label>
+                                <input asp-for="Supplier.LeadTimeDays" type="number" class="form-control border-2 shadow-sm" min="1" value="5" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold"><i class="bi bi-star me-1 text-danger"></i> Initial Rating (0-5)</label>
+                                <input asp-for="Supplier.Rating" type="number" step="0.1" min="0" max="5" class="form-control border-2 shadow-sm" value="0" required />
+                            </div>
                         </div>
 
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">Save Supplier</button>
-                            <a href="/Suppliers" class="btn btn-secondary">Cancel</a>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold"><i class="bi bi-geo-alt-fill me-1 text-secondary"></i> Headquarters Address</label>
+                            <textarea asp-for="Supplier.Address" class="form-control border-2 shadow-sm" rows="3" placeholder="Full business address..." required></textarea>
+                        </div>
+
+                        <div class="d-flex gap-3 mt-5">
+                            <button type="submit" class="btn btn-success btn-lg px-5 shadow">
+                                <i class="bi bi-plus-circle me-2"></i> Create Partner
+                            </button>
+                            <a href="/Suppliers" class="btn btn-light btn-lg border px-4">
+                                Cancel
+                            </a>
                         </div>
                     </form>
                 </div>

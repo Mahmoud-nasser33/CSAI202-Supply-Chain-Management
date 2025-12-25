@@ -1,4 +1,4 @@
-// Global Search Manager - Handles search across all entities
+
 class SearchManager {
     constructor() {
         this.searchInput = null;
@@ -16,14 +16,14 @@ class SearchManager {
 
     setupSearchListener() {
         let searchTimeout;
+        const debounceTime = (typeof AppConfig !== 'undefined' && AppConfig.ui) ? AppConfig.ui.searchDebounce : 300;
         this.searchInput.addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 this.performSearch(e.target.value);
-            }, 300); // Debounce 300ms
+            }, debounceTime);
         });
 
-        // Handle Enter key
         this.searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 this.performSearch(e.target.value);
@@ -45,61 +45,11 @@ class SearchManager {
         const lowerQuery = query.toLowerCase();
         const allResults = [];
 
-        // Search Orders
-        const orders = mockDataService.getOrders();
-        orders.forEach(order => {
-            if (order.id.toLowerCase().includes(lowerQuery) ||
-                order.customerName.toLowerCase().includes(lowerQuery) ||
-                order.status.toLowerCase().includes(lowerQuery)) {
-                allResults.push({
-                    type: 'Order',
-                    icon: 'cart-check',
-                    title: `Order ${order.id}`,
-                    subtitle: `${order.customerName} - $${order.totalAmount}`,
-                    link: `/Orders?id=${order.id}`,
-                    data: order
-                });
-            }
-        });
-
-        // Search Products
-        const products = mockDataService.getProducts();
-        products.forEach(product => {
-            if (product.name.toLowerCase().includes(lowerQuery) ||
-                product.sku.toLowerCase().includes(lowerQuery) ||
-                product.category.toLowerCase().includes(lowerQuery)) {
-                allResults.push({
-                    type: 'Product',
-                    icon: 'box',
-                    title: product.name,
-                    subtitle: `${product.sku} - $${product.price}`,
-                    link: `/Products?id=${product.id}`,
-                    data: product
-                });
-            }
-        });
-
-        // Search Customers
-        const customers = mockDataService.getCustomers();
-        customers.forEach(customer => {
-            if (customer.name.toLowerCase().includes(lowerQuery) ||
-                customer.email.toLowerCase().includes(lowerQuery)) {
-                allResults.push({
-                    type: 'Customer',
-                    icon: 'person',
-                    title: customer.name,
-                    subtitle: customer.email,
-                    link: `/Customers?id=${customer.id}`,
-                    data: customer
-                });
-            }
-        });
-
-        return allResults.slice(0, 10); // Limit to 10 results
+        return allResults;
     }
 
     displayResults(results, query) {
-        // Remove existing results dropdown
+
         const existing = document.getElementById('searchResults');
         if (existing) existing.remove();
 
@@ -108,54 +58,68 @@ class SearchManager {
             return;
         }
 
-        // Create results dropdown
         const dropdown = document.createElement('div');
         dropdown.id = 'searchResults';
         dropdown.className = 'position-absolute bg-white shadow-lg rounded border mt-1';
         dropdown.style.cssText = 'width: 400px; max-height: 400px; overflow-y: auto; z-index: 1050; top: 100%;';
 
-        let html = `
-            <div class="p-2 border-bottom bg-light">
-                <small class="text-muted">Found ${results.length} result${results.length !== 1 ? 's' : ''} for "${query}"</small>
-            </div>
-        `;
+        const header = document.createElement('div');
+        header.className = 'p-2 border-bottom bg-light';
+        const headerText = document.createElement('small');
+        headerText.className = 'text-muted';
+        const resultCount = results.length;
+        headerText.textContent = `Found ${resultCount} result${resultCount !== 1 ? 's' : ''} for "${query}"`;
+        header.appendChild(headerText);
+        dropdown.appendChild(header);
 
         results.forEach(result => {
-            html += `
-                <a href="${result.link}" class="d-block text-decoration-none text-dark p-3 border-bottom search-result-item" style="transition: background 0.2s;">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="rounded-circle bg-primary bg-opacity-10 p-2" style="width: 35px; height: 35px;">
-                            <i class="bi bi-${result.icon} text-primary"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="fw-bold small">${result.title}</div>
-                            <div class="text-muted" style="font-size: 0.75rem;">${result.subtitle}</div>
-                        </div>
-                        <span class="badge bg-secondary">${result.type}</span>
-                    </div>
-                </a>
-            `;
+            const link = document.createElement('a');
+            link.href = result.link;
+            link.className = 'd-block text-decoration-none text-dark p-3 border-bottom search-result-item';
+            link.style.transition = 'background 0.2s';
+
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'd-flex align-items-center gap-2';
+
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'rounded-circle bg-primary bg-opacity-10 p-2 search-result-icon';
+            const icon = document.createElement('i');
+            icon.className = `bi bi-${result.icon} text-primary`;
+            icon.setAttribute('aria-hidden', 'true');
+            iconDiv.appendChild(icon);
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'flex-grow-1';
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'fw-bold small';
+            titleDiv.textContent = result.title;
+            const subtitleDiv = document.createElement('div');
+            subtitleDiv.className = 'text-muted';
+            subtitleDiv.style.fontSize = '0.75rem';
+            subtitleDiv.textContent = result.subtitle;
+            contentDiv.appendChild(titleDiv);
+            contentDiv.appendChild(subtitleDiv);
+
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-secondary';
+            badge.textContent = result.type;
+
+            itemDiv.appendChild(iconDiv);
+            itemDiv.appendChild(contentDiv);
+            itemDiv.appendChild(badge);
+            link.appendChild(itemDiv);
+            dropdown.appendChild(link);
         });
 
-        dropdown.innerHTML = html;
-
-        // Position relative to search input
         const inputParent = this.searchInput.parentElement;
         inputParent.style.position = 'relative';
         inputParent.appendChild(dropdown);
 
-        // Add hover effect
         const items = dropdown.querySelectorAll('.search-result-item');
         items.forEach(item => {
-            item.addEventListener('mouseenter', () => {
-                item.style.background = '#f8f9fa';
-            });
-            item.addEventListener('mouseleave', () => {
-                item.style.background = '';
-            });
+
         });
 
-        // Close on click outside
         setTimeout(() => {
             document.addEventListener('click', this.closeResultsOnClickOutside.bind(this), { once: true });
         }, 100);
@@ -166,10 +130,15 @@ class SearchManager {
         dropdown.id = 'searchResults';
         dropdown.className = 'position-absolute bg-white shadow-lg rounded border mt-1 p-4 text-center';
         dropdown.style.cssText = 'width: 400px; z-index: 1050; top: 100%;';
-        dropdown.innerHTML = `
-            <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
-            <p class="text-muted mb-0 mt-2">No results found for "${query}"</p>
-        `;
+        const icon = document.createElement('i');
+        icon.className = 'bi bi-search text-muted';
+        icon.style.fontSize = '2rem';
+        icon.setAttribute('aria-hidden', 'true');
+        const message = document.createElement('p');
+        message.className = 'text-muted mb-0 mt-2';
+        message.textContent = `No results found for "${query}"`;
+        dropdown.appendChild(icon);
+        dropdown.appendChild(message);
 
         const inputParent = this.searchInput.parentElement;
         inputParent.style.position = 'relative';
@@ -193,10 +162,8 @@ class SearchManager {
     }
 }
 
-// Initialize search manager
 const searchManager = new SearchManager();
 
-// Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = SearchManager;
 }

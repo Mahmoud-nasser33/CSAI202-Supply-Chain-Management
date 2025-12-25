@@ -1,6 +1,7 @@
+// Manages HTTP requests and API logic for Products.
 using Microsoft.AspNetCore.Mvc;
 using SupplyChain.Backend.Models;
-using System.Collections.Generic;
+using SupplyChain.Backend.Repositories;
 
 namespace SupplyChain.Backend.Controllers
 {
@@ -8,76 +9,190 @@ namespace SupplyChain.Backend.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private static List<ProductDto> _products = new List<ProductDto>
+        private readonly IProductRepository _productRepository;
+
+        public ProductsController(IProductRepository productRepository)
         {
-            new ProductDto { Id = 1, Name = "Laptop", Price = 1200, StockQuantity = 50, Description = "High performance laptop" },
-            new ProductDto { Id = 2, Name = "Smartphone", Price = 800, StockQuantity = 150, Description = "Latest model smartphone" },
-            new ProductDto { Id = 3, Name = "Headphones", Price = 150, StockQuantity = 8, Description = "Noise cancelling headphones" },
-            new ProductDto { Id = 4, Name = "Monitor", Price = 300, StockQuantity = 20, Description = "4K Ultra HD Monitor" },
-            new ProductDto { Id = 5, Name = "Keyboard", Price = 100, StockQuantity = 0, Description = "Mechanical keyboard" }
-        };
+            _productRepository = productRepository;
+        }
 
         [HttpGet]
-        public IActionResult GetProducts()
+        public async Task<IActionResult> GetProducts()
         {
-            return Ok(_products);
+            try
+            {
+                List<Product> products = await _productRepository.GetAllProductsAsync();
+                List<ProductDto> productDtos = products.Select(p => new ProductDto
+                {
+                    Id = p.Product_ID,
+                    Name = p.Product_Name,
+                    Price = p.Price,
+                    Description = p.Description ?? string.Empty,
+                    CategoryID = p.CategoryID,
+                    CategoryName = p.CategoryName,
+                    StockQuantity = p.StockQuantity,
+                    SupplierID = p.SupplierID ?? 0,
+                    SupplierName = p.SupplierName
+                }).ToList();
+                return Ok(productDtos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error retrieving products", error = ex.Message });
+            }
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetProduct(int id)
+        public async Task<IActionResult> GetProduct(int id)
         {
-            var product = _products.FirstOrDefault(p => p.Id == id);
-            if (product == null)
+            try
             {
-                return NotFound();
+                Product product = await _productRepository.GetProductByIdAsync(id);
+                if (product == null)
+                {
+                    return NotFound(new { message = $"Product with ID {id} not found" });
+                }
+
+                ProductDto productDto = new ProductDto
+                {
+                    Id = product.Product_ID,
+                    Name = product.Product_Name,
+                    Price = product.Price,
+                    Description = product.Description ?? string.Empty,
+                    CategoryID = product.CategoryID,
+                    CategoryName = product.CategoryName,
+                    StockQuantity = product.StockQuantity,
+                    SupplierID = product.SupplierID ?? 0,
+                    SupplierName = product.SupplierName
+                };
+
+                return Ok(productDto);
             }
-            return Ok(product);
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error retrieving product", error = ex.Message });
+            }
         }
 
         [HttpPost]
-        public IActionResult CreateProduct([FromBody] ProductDto product)
+        public async Task<IActionResult> CreateProduct([FromBody] ProductDto productDto)
         {
-            product.Id = _products.Max(p => p.Id) + 1;
-            _products.Add(product);
-            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                Product product = new Product
+                {
+                    Product_Name = productDto.Name,
+                    Description = productDto.Description,
+                    Price = productDto.Price,
+                    CategoryID = productDto.CategoryID,
+                    SupplierID = productDto.SupplierID > 0 ? productDto.SupplierID : null
+                };
+
+                Product createdProduct = await _productRepository.CreateProductAsync(product);
+                productDto.Id = createdProduct.Product_ID;
+
+                return CreatedAtAction(nameof(GetProduct), new { id = productDto.Id }, productDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error creating product", error = ex.Message });
+            }
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateProduct(int id, [FromBody] ProductDto product)
+        public async Task<IActionResult> UpdateProduct(int id, [FromBody] ProductDto productDto)
         {
-            var existingProduct = _products.FirstOrDefault(p => p.Id == id);
-            if (existingProduct == null)
+            try
             {
-                return NotFound();
-            }
-            
-            existingProduct.Name = product.Name;
-            existingProduct.Price = product.Price;
-            existingProduct.StockQuantity = product.StockQuantity;
-            existingProduct.Description = product.Description;
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
-            return NoContent();
+                Product product = new Product
+                {
+                    Product_Name = productDto.Name,
+                    Description = productDto.Description,
+                    Price = productDto.Price,
+                    CategoryID = productDto.CategoryID,
+                    SupplierID = productDto.SupplierID > 0 ? productDto.SupplierID : null
+                };
+
+                bool updated = await _productRepository.UpdateProductAsync(id, product);
+                if (!updated)
+                {
+                    return NotFound(new { message = $"Product with ID {id} not found" });
+                }
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error updating product", error = ex.Message });
+            }
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteProduct(int id)
+        public async Task<IActionResult> DeleteProduct(int id)
         {
-            var product = _products.FirstOrDefault(p => p.Id == id);
-            if (product == null)
+            try
             {
-                return NotFound();
+                bool deleted = await _productRepository.DeleteProductAsync(id);
+                if (!deleted)
+                {
+                    return NotFound(new { message = $"Product with ID {id} not found" });
+                }
+
+                return NoContent();
             }
-            _products.Remove(product);
-            return NoContent();
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error deleting product", error = ex.Message });
+            }
+        }
+
+        [HttpGet("category/{categoryId}")]
+        public async Task<IActionResult> GetProductsByCategory(int categoryId)
+        {
+            try
+            {
+                List<Product> products = await _productRepository.GetProductsByCategoryAsync(categoryId);
+                List<ProductDto> productDtos = products.Select(p => new ProductDto
+                {
+                    Id = p.Product_ID,
+                    Name = p.Product_Name,
+                    Price = p.Price,
+                    Description = p.Description ?? string.Empty,
+                    CategoryID = p.CategoryID,
+                    CategoryName = p.CategoryName,
+                    StockQuantity = p.StockQuantity,
+                    SupplierID = p.SupplierID ?? 0,
+                    SupplierName = p.SupplierName
+                }).ToList();
+                return Ok(productDtos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error retrieving products", error = ex.Message });
+            }
         }
     }
 
     public class ProductDto
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public decimal Price { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public int? CategoryID { get; set; }
+        public string? CategoryName { get; set; }
         public int StockQuantity { get; set; }
-        public string Description { get; set; }
+        public int SupplierID { get; set; }
+        public string SupplierName { get; set; } = string.Empty;
     }
 }

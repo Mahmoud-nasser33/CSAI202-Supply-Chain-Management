@@ -1,86 +1,71 @@
+// Defines the Shipments.cshtml class/logic for the Supply Chain system.
+#nullable enable
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
+using SupplyChain.Backend.Models;
 
 namespace SupplyChain.Frontend.Pages
 {
     public class ShipmentsModel : PageModel
     {
-        public List<ShipmentDto> Shipments { get; set; } = new List<ShipmentDto>();
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public IActionResult OnPostDelete(int id)
+        public ShipmentsModel(IHttpClientFactory httpClientFactory)
         {
-            // MOCK BEHAVIOR: Simulate Deletion
-            // In a real app, we would call the API: await client.DeleteAsync($"api/Shipments/{id}");
-            
-            // For now, just reload the page to show it "worked" (UI will reset to mock data, but action is handled)
-            return RedirectToPage();
+            _httpClientFactory = httpClientFactory;
         }
 
-        public void OnGet()
+        public List<ShipmentDto> Shipments { get; set; } = new List<ShipmentDto>();
+
+        public async Task OnGetAsync()
         {
-            // High-Fidelity Mock Data based on User Request
-            Shipments = new List<ShipmentDto>
+            try
             {
-                new ShipmentDto
+                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+                var shipments = await client.GetFromJsonAsync<List<ShipmentDto>>("api/Shipments");
+                if (shipments != null)
                 {
-                    Id = 1,
-                    OriginWarehouse = "Central Hub",
-                    DestinationAddress = "Springfield Distribution Center",
-                    Status = "In Transit",
-                    EstimatedArrival = new DateTime(2025, 12, 19),
-                    Progress = 65, // Percentage for progress bar
-                    CurrentStep = 2, // 0: Processing, 1: Shipped, 2: In Transit, 3: Delivered
-                    Items = new List<ShipmentItemDto>
-                    {
-                        new ShipmentItemDto { ProductName = "Laptop", Quantity = 1 },
-                        new ShipmentItemDto { ProductName = "Wireless Mouse", Quantity = 2 }
-                    }
-                },
-                new ShipmentDto
-                {
-                    Id = 2,
-                    OriginWarehouse = "West Coast Depot",
-                    DestinationAddress = "Shelbyville Branch",
-                    Status = "Delivered",
-                    EstimatedArrival = DateTime.Now.AddDays(-1),
-                    Progress = 100,
-                    CurrentStep = 3,
-                    Items = new List<ShipmentItemDto>
-                    {
-                        new ShipmentItemDto { ProductName = "4K Monitor", Quantity = 10 }
-                    }
-                },
-                new ShipmentDto
-                {
-                    Id = 3,
-                    OriginWarehouse = "Euro Hub",
-                    DestinationAddress = "London Store",
-                    Status = "Processing",
-                    EstimatedArrival = DateTime.Now.AddDays(5),
-                    Progress = 15,
-                    CurrentStep = 0,
-                    Items = new List<ShipmentItemDto>
-                    {
-                        new ShipmentItemDto { ProductName = "Gaming Keyboard", Quantity = 50 },
-                        new ShipmentItemDto { ProductName = "Headset", Quantity = 50 }
-                    }
+                    Shipments = shipments;
                 }
-            };
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching shipments: {ex.Message}");
+            }
+        }
+
+        public async Task<IActionResult> OnPostDelete(int id)
+        {
+            try
+            {
+                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+                HttpResponseMessage response = await client.DeleteAsync($"api/Shipments/{id}");
+            }
+            catch (Exception)
+            {
+
+            }
+            return RedirectToPage();
         }
     }
 
     public class ShipmentDto
     {
-        public int Id { get; set; }
-        public string OriginWarehouse { get; set; }
-        public string DestinationAddress { get; set; }
-        public string Status { get; set; }
-        public DateTime EstimatedArrival { get; set; }
-        public int Progress { get; set; }
-        public int CurrentStep { get; set; }
-        public List<ShipmentItemDto> Items { get; set; }
+        public int ShipmentID { get; set; }
+        public int OrderID { get; set; }
+        public int WarehouseID { get; set; }
+        public string? WarehouseName { get; set; }
+        public string? CustomerName { get; set; }
+        public string? Status { get; set; }
+        public string? Shipped_Via { get; set; }
+        public DateTime? Shipment_Date { get; set; }
+
+        public int Progress => Status == "Delivered" ? 100 : (Status == "In Transit" ? 60 : 20);
+        public List<ShipmentItemDto> Items { get; set; } = new();
     }
 
     public class ShipmentItemDto

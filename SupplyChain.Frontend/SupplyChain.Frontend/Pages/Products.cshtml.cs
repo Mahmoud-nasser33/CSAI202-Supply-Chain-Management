@@ -1,7 +1,13 @@
+// Defines the Products.cshtml class/logic for the Supply Chain system.
+#nullable enable
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
 using System.Net.Http.Json;
+using System.Net.Http;
+using System.Linq;
+using System;
+using SupplyChain.Backend.Models;
 
 namespace SupplyChain.Frontend.Pages
 {
@@ -10,6 +16,8 @@ namespace SupplyChain.Frontend.Pages
         private readonly IHttpClientFactory _httpClientFactory;
 
         public List<ProductDto> Products { get; set; } = new List<ProductDto>();
+        public int CategoryCount => Products.Select(p => p.Category).Distinct().Count();
+        public int SupplierCount => Products.Select(p => p.Supplier).Distinct().Count();
 
         public ProductsModel(IHttpClientFactory httpClientFactory)
         {
@@ -18,26 +26,68 @@ namespace SupplyChain.Frontend.Pages
 
         public async Task OnGet()
         {
-            // Mock Data for "Amazing" & "Logical" Experience
-            Products = new List<ProductDto>
+            try
             {
-                new ProductDto { Id = 1, Name = "Industrial Steel Sheets", SKU = "STL-001", Category = "Raw Materials", Price = 1200.50m, StockQuantity = 450, Supplier = "MetalWorks Co." },
-                new ProductDto { Id = 2, Name = "Copper Wire Spools", SKU = "CPR-009", Category = "Electronics", Price = 85.00m, StockQuantity = 12, Supplier = "ElectroGlobal" },
-                new ProductDto { Id = 3, Name = "Hydraulic Pump X200", SKU = "PMP-200", Category = "Machinery", Price = 2500.00m, StockQuantity = 5, Supplier = "HeavyMech Inc." },
-                new ProductDto { Id = 4, Name = "Circuit Board V5", SKU = "PCB-005", Category = "Electronics", Price = 45.99m, StockQuantity = 1200, Supplier = "TechSource" },
-                new ProductDto { Id = 5, Name = "Safety Helmets (Yellow)", SKU = "SAF-099", Category = "Safety Gear", Price = 15.00m, StockQuantity = 300, Supplier = "SafeGuard" },
-                new ProductDto { Id = 6, Name = "Conveyor Belt (5m)", SKU = "CNV-005", Category = "Logistics", Price = 350.00m, StockQuantity = 8, Supplier = "HeavyMech Inc." }
-            };
-            
-            await Task.CompletedTask;
-        } 
+                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+                HttpResponseMessage response = await client.GetAsync("api/Products");
 
-        
+                if (response.IsSuccessStatusCode)
+                {
+                    List<ApiProductDto> apiProducts = await response.Content.ReadFromJsonAsync<List<ApiProductDto>>();
+
+                    if (apiProducts != null && apiProducts.Count > 0)
+                    {
+
+                        Products = apiProducts.Select(p => new ProductDto
+                        {
+                            Id = p.Id,
+                            Name = p.Name,
+                            SKU = $"PRD-{p.Id:D4}",
+                            Category = p.CategoryName ?? "Uncategorized",
+                            Price = p.Price,
+                            StockQuantity = p.StockQuantity,
+                            Supplier = p.SupplierName ?? "N/A",
+                            Description = p.Description ?? string.Empty
+                        }).ToList();
+                    }
+                    else
+                    {
+                        Products = new List<ProductDto>();
+                    }
+                }
+                else
+                {
+
+                    string errorContent = await response.Content.ReadAsStringAsync();
+                    System.Diagnostics.Debug.WriteLine($"API call failed: {response.StatusCode} - {errorContent}");
+                    Products = new List<ProductDto>();
+                }
+            }
+            catch (Exception ex)
+            {
+
+                System.Diagnostics.Debug.WriteLine($"Error fetching products: {ex.Message}");
+                Products = new List<ProductDto>();
+            }
+        }
+
+        private class ApiProductDto
+        {
+            public int Id { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public decimal Price { get; set; }
+            public string Description { get; set; } = string.Empty;
+            public int CategoryID { get; set; }
+            public string? CategoryName { get; set; }
+            public int StockQuantity { get; set; }
+            public string? SupplierName { get; set; }
+        }
+
         public async Task<IActionResult> OnPostDeleteAsync(int id)
         {
-            var client = _httpClientFactory.CreateClient("BackendApi");
+            HttpClient client = _httpClientFactory.CreateClient("BackendApi");
 
-            var response = await client.DeleteAsync($"api/Products/{id}");
+            HttpResponseMessage response = await client.DeleteAsync($"api/Products/{id}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -48,5 +98,5 @@ namespace SupplyChain.Frontend.Pages
                 return Page();
             }
         }
-    } 
-} 
+    }
+}

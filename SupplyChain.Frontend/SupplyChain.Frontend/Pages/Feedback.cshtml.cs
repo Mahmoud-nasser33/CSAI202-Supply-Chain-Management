@@ -1,5 +1,7 @@
+// Defines the Feedback.cshtml class/logic for the Supply Chain system.
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
+using SupplyChain.Backend.Models;
 
 namespace SupplyChain.Frontend.Pages
 {
@@ -9,12 +11,8 @@ namespace SupplyChain.Frontend.Pages
 
         public void OnGet()
         {
-            FeedbackList = new List<FeedbackItem>
-            {
-                new FeedbackItem { FeedbackID = 1, OrderID = 101, CustomerName = "Alice Johnson", Rating = 5, Comment = "Excellent service and fast delivery!" },
-                new FeedbackItem { FeedbackID = 2, OrderID = 104, CustomerName = "Bob Smith", Rating = 3, Comment = "Product was okay, but packaging was damaged." },
-                new FeedbackItem { FeedbackID = 3, OrderID = 112, CustomerName = "Charlie Brown", Rating = 1, Comment = "Wrong item delivered. Please refund." }
-            };
+            // Empty until backend API is implemented.
+            FeedbackList = new List<FeedbackItem>();
         }
 
         public class FeedbackItem
@@ -22,7 +20,7 @@ namespace SupplyChain.Frontend.Pages
             public int FeedbackID { get; set; }
             public int OrderID { get; set; }
             public string CustomerName { get; set; }
-            public int Rating { get; set; } // 1-5
+            public int Rating { get; set; }
             public string Comment { get; set; }
         }
     }

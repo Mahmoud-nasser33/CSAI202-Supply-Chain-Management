@@ -13,7 +13,7 @@
     </div>
 
     <div class="bento-grid">
-        <!-- Identity Card (Span 2) -->
+
         <div class="card border-0 glass-panel shadow-sm span-col-2 animate-enter delay-1 h-100 bg-gradient-primary text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #0f172a 0%, #334155 100%) !important;">
              <div class="card-body text-center p-5 d-flex flex-column align-items-center justify-content-center">
                  <div class="position-relative mb-4">
@@ -34,10 +34,9 @@
              </div>
         </div>
 
-        <!-- Edit Form Card (Span 2) -->
         <div class="card border-0 glass-panel shadow-sm span-col-2 animate-enter delay-2">
             <div class="card-body p-4">
-                <h5 class="fw-bold mb-4">Account Details</h5>
+                <h5 class="fw-bold mb-4">Account Technical Specifications</h5>
                 <form method="post" id="profileForm">
                     <div class="row g-4">
                         <div class="col-md-6">
@@ -63,9 +62,9 @@
                         </div>
                          <div class="col-md-6">
                             <label class="form-label fw-bold small text-muted text-uppercase">Role</label>
-                            <input type="text" class="form-control border-0 bg-light" value="System Administrator" disabled readonly>
+                            <input type="text" class="form-control border-0 bg-light" value="System Governance Administrator" disabled readonly>
                         </div>
-                        
+
                         <div class="col-12 mt-4 d-flex justify-content-end gap-2">
                             <button type="button" class="btn btn-outline-secondary px-4 fw-bold">Cancel</button>
                             <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm"><i class="bi bi-save me-2"></i> Save Changes</button>
@@ -98,7 +97,7 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     avatarPreview.src = e.target.result;
-                    localStorage.setItem('profile_avatar', e.target.result); 
+                    localStorage.setItem('profile_avatar', e.target.result);
                 }
                 reader.readAsDataURL(file);
             }
@@ -107,13 +106,13 @@
         // Save Logic
         document.getElementById('profileForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             // Save to LocalStorage
             const name = document.getElementById('FullName').value;
             localStorage.setItem('profile_fullname', name);
             localStorage.setItem('profile_email', document.getElementById('Email').value);
             localStorage.setItem('profile_phone', document.getElementById('Phone').value);
-            
+
             document.getElementById('displayName').innerText = name;
 
             // UI Feedback

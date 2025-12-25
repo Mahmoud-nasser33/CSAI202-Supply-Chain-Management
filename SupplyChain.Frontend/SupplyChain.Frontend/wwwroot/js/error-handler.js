@@ -1,11 +1,11 @@
-// Error Handler - Global error handling and display
+
 class ErrorHandler {
     constructor() {
         this.init();
     }
 
     init() {
-        // Setup global error handlers
+
         window.addEventListener('error', (event) => {
             this.handleError(event.error || event.message);
         });
@@ -15,25 +15,21 @@ class ErrorHandler {
         });
     }
 
-    // Handle and display error
     handleError(error, context = '') {
         console.error('Error:', error, context);
 
         const errorMessage = this.getErrorMessage(error);
         this.showErrorToast(errorMessage);
 
-        // Log error for debugging
         this.logError(error, context);
     }
 
-    // Get user-friendly error message
     getErrorMessage(error) {
         if (typeof error === 'string') return error;
         if (error?.message) return error.message;
         return 'An unexpected error occurred. Please try again.';
     }
 
-    // Show error as toast notification
     showErrorToast(message) {
         if (typeof notificationManager !== 'undefined') {
             notificationManager.showToast(message, 'error');
@@ -42,43 +38,69 @@ class ErrorHandler {
         }
     }
 
-    // Show error in specific container
     showError(container, message, title = 'Error') {
         if (!container) return;
 
-        const errorHtml = `
-            <div class="error-state fade-in">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-exclamation-circle-fill error-state-icon"></i>
-                    <div>
-                        <div class="error-state-message">${title}</div>
-                        <div class="text-muted small">${message}</div>
-                    </div>
-                </div>
-            </div>
-        `;
-        container.innerHTML = errorHtml;
+        container.textContent = '';
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-state fade-in';
+        errorDiv.setAttribute('role', 'alert');
+
+        const innerDiv = document.createElement('div');
+        innerDiv.className = 'd-flex align-items-center';
+
+        const icon = document.createElement('i');
+        icon.className = 'bi bi-exclamation-circle-fill error-state-icon';
+        icon.setAttribute('aria-hidden', 'true');
+
+        const contentDiv = document.createElement('div');
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'error-state-message';
+        titleDiv.textContent = title;
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'text-muted small';
+        messageDiv.textContent = message;
+
+        contentDiv.appendChild(titleDiv);
+        contentDiv.appendChild(messageDiv);
+        innerDiv.appendChild(icon);
+        innerDiv.appendChild(contentDiv);
+        errorDiv.appendChild(innerDiv);
+        container.appendChild(errorDiv);
     }
 
-    // Show success message
     showSuccess(container, message, title = 'Success') {
         if (!container) return;
 
-        const successHtml = `
-            <div class="success-state fade-in">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-check-circle-fill success-state-icon"></i>
-                    <div>
-                        <div class="fw-bold text-success">${title}</div>
-                        <div class="text-muted small">${message}</div>
-                    </div>
-                </div>
-            </div>
-        `;
-        container.innerHTML = successHtml;
+        container.textContent = '';
+        const successDiv = document.createElement('div');
+        successDiv.className = 'success-state fade-in';
+        successDiv.setAttribute('role', 'status');
+        successDiv.setAttribute('aria-live', 'polite');
+
+        const innerDiv = document.createElement('div');
+        innerDiv.className = 'd-flex align-items-center';
+
+        const icon = document.createElement('i');
+        icon.className = 'bi bi-check-circle-fill success-state-icon';
+        icon.setAttribute('aria-hidden', 'true');
+
+        const contentDiv = document.createElement('div');
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'fw-bold text-success';
+        titleDiv.textContent = title;
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'text-muted small';
+        messageDiv.textContent = message;
+
+        contentDiv.appendChild(titleDiv);
+        contentDiv.appendChild(messageDiv);
+        innerDiv.appendChild(icon);
+        innerDiv.appendChild(contentDiv);
+        successDiv.appendChild(innerDiv);
+        container.appendChild(successDiv);
     }
 
-    // Validate form field
     validateField(field, rules) {
         const value = field.value.trim();
         const errors = [];
@@ -118,24 +140,19 @@ class ErrorHandler {
         return errors;
     }
 
-    // Show field error
     showFieldError(field, message) {
         if (!field) return;
 
-        // Remove existing error
         this.clearFieldError(field);
 
-        // Add error class
         field.classList.add('is-invalid');
 
-        // Create error message
         const errorDiv = document.createElement('div');
         errorDiv.className = 'invalid-feedback';
         errorDiv.textContent = message;
         field.parentNode.appendChild(errorDiv);
     }
 
-    // Clear field error
     clearFieldError(field) {
         if (!field) return;
 
@@ -144,7 +161,6 @@ class ErrorHandler {
         if (errorDiv) errorDiv.remove();
     }
 
-    // Validate form
     validateForm(form, rules) {
         if (!form) return { valid: false, errors: {} };
 
@@ -168,31 +184,26 @@ class ErrorHandler {
         return { valid: isValid, errors };
     }
 
-    // Email validation
     isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     }
 
-    // Handle network error
     handleNetworkError(error) {
         const message = 'Network error. Please check your connection and try again.';
         this.showErrorToast(message);
     }
 
-    // Handle not found error
     handleNotFoundError(resource = 'Resource') {
         const message = `${resource} not found.`;
         this.showErrorToast(message);
     }
 
-    // Handle permission error
     handlePermissionError() {
         const message = 'You do not have permission to perform this action.';
         this.showErrorToast(message);
     }
 
-    // Log error (could send to server in production)
     logError(error, context) {
         const errorLog = {
             timestamp: new Date().toISOString(),
@@ -203,32 +214,26 @@ class ErrorHandler {
             url: window.location.href
         };
 
-        // Store in localStorage for debugging
         const logs = JSON.parse(localStorage.getItem('error_logs') || '[]');
         logs.push(errorLog);
-        // Keep only last 50 errors
-        if (logs.length > 50) logs.shift();
+
+        const maxLogs = (typeof AppConfig !== 'undefined' && AppConfig.table) ? AppConfig.table.maxErrorLogs : 50;
+        if (logs.length > maxLogs) logs.shift();
         localStorage.setItem('error_logs', JSON.stringify(logs));
 
-        // In production, you would send this to a logging service
-        console.log('Error logged:', errorLog);
     }
 
-    // Get error logs
     getErrorLogs() {
         return JSON.parse(localStorage.getItem('error_logs') || '[]');
     }
 
-    // Clear error logs
     clearErrorLogs() {
         localStorage.removeItem('error_logs');
     }
 }
 
-// Initialize error handler
 const errorHandler = new ErrorHandler();
 
-// Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = ErrorHandler;
 }

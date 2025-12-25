@@ -1,4 +1,4 @@
-/* Parallax Mouse Movement Effect */
+
 document.addEventListener('mousemove', (e) => {
     const moveX = (e.clientX / window.innerWidth - 0.5) * 20;
     const moveY = (e.clientY / window.innerHeight - 0.5) * 20;
@@ -7,7 +7,6 @@ document.addEventListener('mousemove', (e) => {
     document.body.style.setProperty('--mouse-y', `${moveY}px`);
 });
 
-/* Scroll-based Parallax */
 let ticking = false;
 window.addEventListener('scroll', () => {
     if (!ticking) {

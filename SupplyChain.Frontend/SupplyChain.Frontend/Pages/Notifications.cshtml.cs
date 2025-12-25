@@ -1,6 +1,8 @@
+// Defines the Notifications.cshtml class/logic for the Supply Chain system.
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
+using SupplyChain.Backend.Models;
 
 namespace SupplyChain.Frontend.Pages
 {
@@ -10,12 +12,8 @@ namespace SupplyChain.Frontend.Pages
 
         public void OnGet()
         {
-            NotificationList = new List<NotificationItem>
-            {
-                new NotificationItem { ID = 1, Message = "Order #123 has been shipped.", Type = "Order Update", Date = DateTime.Now.AddHours(-2), IsRead = false },
-                new NotificationItem { ID = 2, Message = "Low stock alert: Headphones (Qty: 8)", Type = "Inventory Alert", Date = DateTime.Now.AddDays(-1), IsRead = true },
-                new NotificationItem { ID = 3, Message = "New supplier 'TechDistro' added.", Type = "System", Date = DateTime.Now.AddDays(-2), IsRead = true }
-            };
+            // Empty until backend API is implemented.
+            NotificationList = new List<NotificationItem>();
         }
 
         public class NotificationItem

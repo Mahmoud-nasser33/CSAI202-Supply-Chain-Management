@@ -1,34 +1,68 @@
+// Defines the Users.cshtml class/logic for the Supply Chain system.
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 
 namespace SupplyChain.Frontend.Pages
 {
     public class UsersModel : PageModel
     {
-        public List<UserItem> UserList { get; set; } = new();
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public Microsoft.AspNetCore.Mvc.IActionResult OnPostDelete(int id)
+        public List<UserDto> Users { get; set; } = new List<UserDto>();
+
+        public UsersModel(IHttpClientFactory httpClientFactory)
         {
-            // MOCK BEHAVIOR: Simulate Deletion
+            _httpClientFactory = httpClientFactory;
+        }
+
+        public async Task OnGet()
+        {
+            try
+            {
+                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+                HttpResponseMessage response = await client.GetAsync("api/Users");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Users = await response.Content.ReadFromJsonAsync<List<UserDto>>() ?? new List<UserDto>();
+                }
+            }
+            catch (Exception)
+            {
+                Users = new List<UserDto>();
+            }
+        }
+
+        public async Task<IActionResult> OnPostDelete(int id)
+        {
+            try
+            {
+                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+                HttpResponseMessage response = await client.DeleteAsync($"api/Users/{id}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return RedirectToPage();
+                }
+            }
+            catch (Exception)
+            {
+
+            }
             return RedirectToPage();
         }
+    }
 
-        public void OnGet()
-        {
-            UserList = new List<UserItem>
-            {
-                new UserItem { UserID = 1, Username = "admin", Email = "admin@system.com", Role = "Administrator" },
-                new UserItem { UserID = 2, Username = "manager", Email = "manager@system.com", Role = "Manager" },
-                new UserItem { UserID = 3, Username = "staff1", Email = "staff1@system.com", Role = "Staff" }
-            };
-        }
-
-        public class UserItem
-        {
-            public int UserID { get; set; }
-            public string Username { get; set; }
-            public string Email { get; set; }
-            public string Role { get; set; }
-        }
+    public class UserDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public int? RoleId { get; set; }
+        public string? RoleName { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-// Notification System - Toast notifications and notification center
+
 class NotificationManager {
     constructor() {
         this.notifications = [];
@@ -6,13 +6,13 @@ class NotificationManager {
     }
 
     init() {
-        // Load notifications from localStorage
-        const saved = localStorage.getItem('silsila_notifications');
+
+        const storageKey = (typeof AppConfig !== 'undefined' && AppConfig.notifications) ? AppConfig.notifications.storageKey : 'silsila_notifications';
+        const saved = localStorage.getItem(storageKey);
         if (saved) {
             this.notifications = JSON.parse(saved);
         }
 
-        // Create toast container if it doesn't exist
         if (!document.getElementById('toastContainer')) {
             const container = document.createElement('div');
             container.id = 'toastContainer';
@@ -21,12 +21,13 @@ class NotificationManager {
             document.body.appendChild(container);
         }
 
-        // Update notification count
         this.updateNotificationCount();
     }
 
-    // Show toast notification
-    showToast(message, type = 'info', duration = 5000) {
+    showToast(message, type = 'info', duration = null) {
+        if (duration === null) {
+            duration = (typeof AppConfig !== 'undefined' && AppConfig.ui) ? AppConfig.ui.toastDuration : 5000;
+        }
         const toastId = 'toast_' + Date.now();
         const iconMap = {
             'success': 'check-circle-fill',
@@ -45,32 +46,50 @@ class NotificationManager {
         const icon = iconMap[type] || iconMap['info'];
         const color = colorMap[type] || colorMap['info'];
 
-        const toastHTML = `
-            <div class="toast align-items-center text-bg-${color} border-0" role="alert" id="${toastId}">
-                <div class="d-flex">
-                    <div class="toast-body d-flex align-items-center gap-2">
-                        <i class="bi bi-${icon}"></i>
-                        <span>${message}</span>
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            </div>
-        `;
+        const toastEl = document.createElement('div');
+        toastEl.className = `toast align-items-center text-bg-${color} border-0`;
+        toastEl.setAttribute('role', 'alert');
+        toastEl.setAttribute('aria-live', 'assertive');
+        toastEl.setAttribute('aria-atomic', 'true');
+        toastEl.id = toastId;
+
+        const toastInner = document.createElement('div');
+        toastInner.className = 'd-flex';
+
+        const toastBody = document.createElement('div');
+        toastBody.className = 'toast-body d-flex align-items-center gap-2';
+
+        const iconEl = document.createElement('i');
+        iconEl.className = `bi bi-${icon}`;
+        iconEl.setAttribute('aria-hidden', 'true');
+
+        const messageEl = document.createElement('span');
+        messageEl.textContent = message;
+
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'btn-close btn-close-white me-2 m-auto';
+        closeBtn.setAttribute('data-bs-dismiss', 'toast');
+        closeBtn.setAttribute('aria-label', 'Close');
+
+        toastBody.appendChild(iconEl);
+        toastBody.appendChild(messageEl);
+        toastInner.appendChild(toastBody);
+        toastInner.appendChild(closeBtn);
+        toastEl.appendChild(toastInner);
 
         const container = document.getElementById('toastContainer');
-        container.insertAdjacentHTML('beforeend', toastHTML);
+        container.appendChild(toastEl);
 
         const toastElement = document.getElementById(toastId);
         const toast = new bootstrap.Toast(toastElement, { delay: duration });
         toast.show();
 
-        // Remove from DOM after hidden
         toastElement.addEventListener('hidden.bs.toast', () => {
             toastElement.remove();
         });
     }
 
-    // Add notification to center
     addNotification(notification) {
         const newNotification = {
             id: Date.now(),
@@ -86,13 +105,11 @@ class NotificationManager {
         this.saveNotifications();
         this.updateNotificationCount();
 
-        // Also show as toast
         this.showToast(notification.title, notification.type);
 
         return newNotification;
     }
 
-    // Mark notification as read
     markAsRead(notificationId) {
         const notification = this.notifications.find(n => n.id === notificationId);
         if (notification) {
@@ -102,19 +119,16 @@ class NotificationManager {
         }
     }
 
-    // Mark all as read
     markAllAsRead() {
         this.notifications.forEach(n => n.read = true);
         this.saveNotifications();
         this.updateNotificationCount();
     }
 
-    // Get unread count
     getUnreadCount() {
         return this.notifications.filter(n => !n.read).length;
     }
 
-    // Update notification count badge
     updateNotificationCount() {
         const badge = document.getElementById('notificationCount');
         if (badge) {
@@ -124,24 +138,21 @@ class NotificationManager {
         }
     }
 
-    // Save to localStorage
     saveNotifications() {
-        localStorage.setItem('silsila_notifications', JSON.stringify(this.notifications));
+        const storageKey = (typeof AppConfig !== 'undefined' && AppConfig.notifications) ? AppConfig.notifications.storageKey : 'silsila_notifications';
+        localStorage.setItem(storageKey, JSON.stringify(this.notifications));
     }
 
-    // Get all notifications
     getNotifications() {
         return this.notifications;
     }
 
-    // Clear all notifications
     clearAll() {
         this.notifications = [];
         this.saveNotifications();
         this.updateNotificationCount();
     }
 
-    // Demo: Generate random notification
     generateDemoNotification() {
         const demoNotifications = [
             { title: 'New Order Received', message: 'Order #' + Math.floor(Math.random() * 10000) + ' from Customer', type: 'success' },
@@ -156,19 +167,18 @@ class NotificationManager {
     }
 }
 
-// Initialize notification manager
 const notificationManager = new NotificationManager();
 
-// Setup demo notification generator (every 30 seconds)
-if (sessionManager.isLoggedIn()) {
+if (sessionManager.isLoggedIn() && typeof AppConfig !== 'undefined' && AppConfig.demo && AppConfig.demo.enabled) {
+    const interval = AppConfig.notifications ? AppConfig.notifications.demoInterval : 30000;
+    const probability = AppConfig.notifications ? (1 - AppConfig.notifications.demoProbability) : 0.3;
     setInterval(() => {
-        if (Math.random() > 0.7) { // 30% chance every 30 seconds
+        if (Math.random() > probability) {
             notificationManager.generateDemoNotification();
         }
-    }, 30000);
+    }, interval);
 }
 
-// Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = NotificationManager;
 }

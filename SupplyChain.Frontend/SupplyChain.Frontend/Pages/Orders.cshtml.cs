@@ -1,46 +1,109 @@
+// Defines the Orders.cshtml class/logic for the Supply Chain system.
+#nullable enable
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Json;
+using SupplyChain.Backend.Models;
 
 namespace SupplyChain.Frontend.Pages
 {
     public class OrdersModel : PageModel
     {
+        private readonly IHttpClientFactory _httpClientFactory;
+
         public List<OrderDto> Orders { get; set; } = new List<OrderDto>();
         public string SearchString { get; set; }
 
-        public IActionResult OnPostDelete(int id)
+        public OrdersModel(IHttpClientFactory httpClientFactory)
         {
-            // MOCK BEHAVIOR: Simulate Cancellation/Deletion
+            _httpClientFactory = httpClientFactory;
+        }
+
+        public async Task<IActionResult> OnPostDelete(int id)
+        {
+            try
+            {
+                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+
+                HttpResponseMessage response = await client.DeleteAsync($"api/Orders/{id}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return RedirectToPage();
+                }
+            }
+            catch (Exception)
+            {
+
+            }
             return RedirectToPage();
         }
 
-        public void OnGet(string searchString)
+        public async Task OnGet(string searchString)
         {
             SearchString = searchString;
 
-            // Mock Data
-            var allOrders = new List<OrderDto>
+            try
             {
-                new OrderDto { OrderID = 101, OrderDate = new DateTime(2025, 12, 10), Status = "Shipped", TotalAmount = 1500.00m },
-                new OrderDto { OrderID = 102, OrderDate = new DateTime(2025, 12, 12), Status = "Processing", TotalAmount = 450.50m },
-                new OrderDto { OrderID = 103, OrderDate = new DateTime(2025, 12, 14), Status = "Delivered", TotalAmount = 2100.00m },
-                new OrderDto { OrderID = 104, OrderDate = new DateTime(2025, 12, 15), Status = "Pending", TotalAmount = 120.00m },
-                new OrderDto { OrderID = 105, OrderDate = new DateTime(2025, 12, 16), Status = "Cancelled", TotalAmount = 0.00m }
-            };
+                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+                HttpResponseMessage response = await client.GetAsync("api/Orders");
 
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                Orders = allOrders.Where(o => 
-                    o.OrderID.ToString().Contains(searchString) || 
-                    o.Status.Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToList();
+                if (response.IsSuccessStatusCode)
+                {
+                    var apiOrders = await response.Content.ReadFromJsonAsync<List<ApiOrderDto>>();
+
+                    if (apiOrders != null && apiOrders.Count > 0)
+                    {
+                        var allOrders = apiOrders.Select(o => new OrderDto
+                        {
+                            OrderID = o.OrderID,
+                            OrderDate = o.OrderDate,
+                            Status = o.Status,
+                            TotalAmount = o.TotalAmount ?? 0,
+                            CustomerName = o.CustomerName ?? "Unknown"
+                        }).ToList();
+
+                        if (!string.IsNullOrEmpty(searchString))
+                        {
+                            Orders = allOrders.Where(o =>
+                                o.OrderID.ToString().Contains(searchString) ||
+                                o.Status.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                                (o.CustomerName != null && o.CustomerName.Contains(searchString, StringComparison.OrdinalIgnoreCase))).ToList();
+                        }
+                        else
+                        {
+                            Orders = allOrders;
+                        }
+                    }
+                    else
+                    {
+                        Orders = new List<OrderDto>();
+                    }
+                }
+                else
+                {
+
+                    Orders = new List<OrderDto>();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Orders = allOrders;
+
+                Orders = new List<OrderDto>();
             }
+        }
+
+        private class ApiOrderDto
+        {
+            public int OrderID { get; set; }
+            public int CustomerID { get; set; }
+            public DateTime OrderDate { get; set; }
+            public string Status { get; set; } = string.Empty;
+            public decimal? TotalAmount { get; set; }
+            public string? CustomerName { get; set; }
         }
     }
 
@@ -50,5 +113,6 @@ namespace SupplyChain.Frontend.Pages
         public DateTime OrderDate { get; set; }
         public string Status { get; set; }
         public decimal TotalAmount { get; set; }
+        public string CustomerName { get; set; } = string.Empty;
     }
 }

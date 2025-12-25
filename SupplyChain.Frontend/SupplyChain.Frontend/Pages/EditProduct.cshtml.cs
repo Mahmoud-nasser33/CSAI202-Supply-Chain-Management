@@ -1,6 +1,8 @@
+// Defines the EditProduct.cshtml class/logic for the Supply Chain system.
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Net.Http.Json;
+using SupplyChain.Backend.Models;
 
 namespace SupplyChain.Frontend.Pages
 {
@@ -14,13 +16,16 @@ namespace SupplyChain.Frontend.Pages
         }
 
         [BindProperty]
-        
         public ProductDto Product { get; set; } = new ProductDto();
+
+        public List<CategoryDto> Categories { get; set; } = new();
+        public List<SupplierDto> Suppliers { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            var client = _httpClientFactory.CreateClient("BackendApi");
-            var product = await client.GetFromJsonAsync<ProductDto>($"api/Products/{id}");
+            await LoadDataAsync();
+            HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+            ProductDto product = await client.GetFromJsonAsync<ProductDto>($"api/Products/{id}");
 
             if (product == null)
             {
@@ -31,15 +36,27 @@ namespace SupplyChain.Frontend.Pages
             return Page();
         }
 
+        private async Task LoadDataAsync()
+        {
+            HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+            try
+            {
+                Categories = await client.GetFromJsonAsync<List<CategoryDto>>("api/Categories") ?? new();
+                Suppliers = await client.GetFromJsonAsync<List<SupplierDto>>("api/Suppliers") ?? new();
+            }
+            catch {  }
+        }
+
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
             {
+                await LoadDataAsync();
                 return Page();
             }
 
-            var client = _httpClientFactory.CreateClient("BackendApi");
-            var response = await client.PutAsJsonAsync($"api/Products/{Product.Id}", Product);
+            HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+            HttpResponseMessage response = await client.PutAsJsonAsync($"api/Products/{Product.Id}", Product);
 
             if (response.IsSuccessStatusCode)
             {
@@ -48,10 +65,10 @@ namespace SupplyChain.Frontend.Pages
             else
             {
                 ModelState.AddModelError(string.Empty, "Error updating product.");
+                await LoadDataAsync();
                 return Page();
             }
         }
     }
 
-    
 }

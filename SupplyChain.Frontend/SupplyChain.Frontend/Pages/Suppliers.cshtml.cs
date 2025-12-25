@@ -1,8 +1,10 @@
+// Defines the Suppliers.cshtml class/logic for the Supply Chain system.
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using SupplyChain.Backend.Models;
 
 namespace SupplyChain.Frontend.Pages
 {
@@ -11,6 +13,7 @@ namespace SupplyChain.Frontend.Pages
         private readonly IHttpClientFactory _httpClientFactory;
 
         public List<SupplierDto> Suppliers { get; set; } = new List<SupplierDto>();
+        public int TotalSuppliers => Suppliers.Count;
 
         public SuppliersModel(IHttpClientFactory httpClientFactory)
         {
@@ -19,7 +22,7 @@ namespace SupplyChain.Frontend.Pages
 
         public async Task OnGetAsync()
         {
-            var client = _httpClientFactory.CreateClient("BackendApi");
+            HttpClient client = _httpClientFactory.CreateClient("BackendApi");
             try
             {
                 var result = await client.GetFromJsonAsync<List<SupplierDto>>("api/Suppliers");
@@ -36,19 +39,9 @@ namespace SupplyChain.Frontend.Pages
 
         public async Task<IActionResult> OnPostDeleteAsync(int id)
         {
-            var client = _httpClientFactory.CreateClient("BackendApi");
+            HttpClient client = _httpClientFactory.CreateClient("BackendApi");
             await client.DeleteAsync($"api/Suppliers/{id}");
             return RedirectToPage();
         }
-    }
-
-    public class SupplierDto
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string ContactInfo { get; set; }
-        public string Address { get; set; }
-        public int LeadTimeDays { get; set; }
-        public double Rating { get; set; }
     }
 }

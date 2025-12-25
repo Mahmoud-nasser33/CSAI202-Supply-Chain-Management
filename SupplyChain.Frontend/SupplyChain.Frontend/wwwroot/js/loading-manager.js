@@ -1,11 +1,11 @@
-// Loading Manager - Centralized loading state management
+
 class LoadingManager {
     constructor() {
         this.init();
     }
 
     init() {
-        // Create global loading overlay
+
         this.createLoadingOverlay();
     }
 
@@ -15,17 +15,28 @@ class LoadingManager {
         const overlay = document.createElement('div');
         overlay.id = 'globalLoadingOverlay';
         overlay.className = 'loading-overlay';
-        overlay.innerHTML = `
-            <div class="loading-spinner-container">
-                <div class="loading-spinner"></div>
-                <p class="loading-text">Loading...</p>
-            </div>
-        `;
+        overlay.setAttribute('role', 'status');
+        overlay.setAttribute('aria-live', 'polite');
+        overlay.setAttribute('aria-label', 'Loading');
+
+        const spinnerContainer = document.createElement('div');
+        spinnerContainer.className = 'loading-spinner-container';
+
+        const spinner = document.createElement('div');
+        spinner.className = 'loading-spinner';
+        spinner.setAttribute('aria-hidden', 'true');
+
+        const text = document.createElement('p');
+        text.className = 'loading-text';
+        text.textContent = 'Loading...';
+
+        spinnerContainer.appendChild(spinner);
+        spinnerContainer.appendChild(text);
+        overlay.appendChild(spinnerContainer);
         overlay.style.display = 'none';
         document.body.appendChild(overlay);
     }
 
-    // Show global loading overlay
     show(message = 'Loading...') {
         const overlay = document.getElementById('globalLoadingOverlay');
         if (overlay) {
@@ -35,7 +46,6 @@ class LoadingManager {
         }
     }
 
-    // Hide global loading overlay
     hide() {
         const overlay = document.getElementById('globalLoadingOverlay');
         if (overlay) {
@@ -43,22 +53,23 @@ class LoadingManager {
         }
     }
 
-    // Show loading on specific button
     showButtonLoading(button, text = 'Loading...') {
         if (!button) return;
 
-        // Store original content
+        const originalContent = button.cloneNode(true);
         button.dataset.originalContent = button.innerHTML;
         button.disabled = true;
 
-        // Add spinner
-        button.innerHTML = `
-            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            ${text}
-        `;
+        button.textContent = '';
+        const spinner = document.createElement('span');
+        spinner.className = 'spinner-border spinner-border-sm me-2';
+        spinner.setAttribute('role', 'status');
+        spinner.setAttribute('aria-hidden', 'true');
+        const textNode = document.createTextNode(text);
+        button.appendChild(spinner);
+        button.appendChild(textNode);
     }
 
-    // Hide loading on button
     hideButtonLoading(button) {
         if (!button) return;
 
@@ -69,40 +80,46 @@ class LoadingManager {
         }
     }
 
-    // Show skeleton loader for table
     showTableSkeleton(tableBody, rows = 5, cols = 6) {
         if (!tableBody) return;
 
-        let html = '';
+        tableBody.textContent = '';
         for (let i = 0; i < rows; i++) {
-            html += '<tr class="skeleton-row">';
+            const tr = document.createElement('tr');
+            tr.className = 'skeleton-row';
             for (let j = 0; j < cols; j++) {
-                html += '<td><div class="skeleton-loader"></div></td>';
+                const td = document.createElement('td');
+                const loader = document.createElement('div');
+                loader.className = 'skeleton-loader';
+                loader.setAttribute('aria-hidden', 'true');
+                td.appendChild(loader);
+                tr.appendChild(td);
             }
-            html += '</tr>';
+            tableBody.appendChild(tr);
         }
-        tableBody.innerHTML = html;
     }
 
-    // Show progress bar
     showProgress(container, percent = 0) {
         if (!container) return;
 
-        const progressHtml = `
-            <div class="progress" style="height: 8px;">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                     role="progressbar" 
-                     style="width: ${percent}%" 
-                     aria-valuenow="${percent}" 
-                     aria-valuemin="0" 
-                     aria-valuemax="100">
-                </div>
-            </div>
-        `;
-        container.innerHTML = progressHtml;
+        container.textContent = '';
+        const progressDiv = document.createElement('div');
+        progressDiv.className = 'progress';
+        progressDiv.style.height = '8px';
+
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated';
+        progressBar.setAttribute('role', 'progressbar');
+        progressBar.style.width = `${percent}%`;
+        progressBar.setAttribute('aria-valuenow', percent.toString());
+        progressBar.setAttribute('aria-valuemin', '0');
+        progressBar.setAttribute('aria-valuemax', '100');
+        progressBar.setAttribute('aria-label', `${percent}% complete`);
+
+        progressDiv.appendChild(progressBar);
+        container.appendChild(progressDiv);
     }
 
-    // Update progress
     updateProgress(container, percent) {
         if (!container) return;
 
@@ -113,7 +130,6 @@ class LoadingManager {
         }
     }
 
-    // Simulate async operation with loading
     async simulateLoading(callback, duration = 1000, message = 'Loading...') {
         this.show(message);
         try {
@@ -124,7 +140,6 @@ class LoadingManager {
         }
     }
 
-    // Show loading for element
     showElementLoading(element) {
         if (!element) return;
 
@@ -132,7 +147,6 @@ class LoadingManager {
         element.style.pointerEvents = 'none';
     }
 
-    // Hide loading for element
     hideElementLoading(element) {
         if (!element) return;
 
@@ -141,10 +155,8 @@ class LoadingManager {
     }
 }
 
-// Initialize loading manager
 const loadingManager = new LoadingManager();
 
-// Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = LoadingManager;
 }

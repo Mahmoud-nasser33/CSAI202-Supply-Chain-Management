@@ -1,3 +1,4 @@
+// Defines the Error.cshtml class/logic for the Supply Chain system.
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;

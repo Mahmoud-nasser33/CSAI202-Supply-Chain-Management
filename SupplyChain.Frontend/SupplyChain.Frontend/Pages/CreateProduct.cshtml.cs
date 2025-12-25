@@ -1,6 +1,8 @@
+// Defines the CreateProduct.cshtml class/logic for the Supply Chain system.
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Net.Http.Json;
+using SupplyChain.Backend.Models;
 
 namespace SupplyChain.Frontend.Pages
 {
@@ -13,34 +15,66 @@ namespace SupplyChain.Frontend.Pages
             _httpClientFactory = httpClientFactory;
         }
 
-        
         [BindProperty]
-        public ProductInputDto Product { get; set; }
+        public ProductInputDto Product { get; set; } = new();
 
-        public void OnGet()
+        public List<CategoryDto> Categories { get; set; } = new();
+        public List<SupplierDto> Suppliers { get; set; } = new();
+
+        public async Task OnGetAsync()
         {
+            await LoadDataAsync();
+        }
+
+        private async Task LoadDataAsync()
+        {
+            HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+            try
+            {
+                Categories = await client.GetFromJsonAsync<List<CategoryDto>>("api/Categories") ?? new();
+                Suppliers = await client.GetFromJsonAsync<List<SupplierDto>>("api/Suppliers") ?? new();
+            }
+            catch {  }
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
             {
-                // In a real app, logic would go here.
-                // For this demo, we proceed even if simple validation passes.
+                await LoadDataAsync();
+                return Page();
             }
 
-            // MOCK BEHAVIOR: Simulate successful API call
-            await Task.Delay(500); // Fake network delay
+            try
+            {
+                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
 
-            // Redirect to Products page where the user expects to go
-            return RedirectToPage("/Products");
+                var backendDto = new {
+                    Name = Product.Name,
+                    Price = Product.Price,
+                    Description = Product.Description,
+                    CategoryID = Product.CategoryID,
+                    SupplierID = Product.SupplierID,
+                    StockQuantity = Product.StockQuantity
+                };
+
+                HttpResponseMessage response = await client.PostAsJsonAsync("api/Products", backendDto);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return RedirectToPage("/Products");
+                }
+
+                ModelState.AddModelError(string.Empty, "Error creating product on the server.");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Connection error: {ex.Message}");
+            }
+
+            await LoadDataAsync();
+            return Page();
         }
     }
 
-    public class ProductInputDto
-    {
-        public string Name { get; set; }
-        public decimal Price { get; set; }
-        public int StockQuantity { get; set; }
-    }
 }

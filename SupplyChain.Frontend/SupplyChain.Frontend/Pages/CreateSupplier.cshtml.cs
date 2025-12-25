@@ -1,7 +1,8 @@
+// Defines the CreateSupplier.cshtml class/logic for the Supply Chain system.
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using SupplyChain.Backend.Models;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
 
 namespace SupplyChain.Frontend.Pages
 {
@@ -9,13 +10,13 @@ namespace SupplyChain.Frontend.Pages
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
-        [BindProperty]
-        public SupplierDto Supplier { get; set; } = new SupplierDto();
-
         public CreateSupplierModel(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
         }
+
+        [BindProperty]
+        public Supplier Supplier { get; set; } = new();
 
         public void OnGet()
         {
@@ -28,15 +29,24 @@ namespace SupplyChain.Frontend.Pages
                 return Page();
             }
 
-            var client = _httpClientFactory.CreateClient("BackendApi");
-            var response = await client.PostAsJsonAsync("api/Suppliers", Supplier);
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                return RedirectToPage("/Suppliers");
+                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+
+                HttpResponseMessage response = await client.PostAsJsonAsync("api/Suppliers", Supplier);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return RedirectToPage("/Suppliers");
+                }
+
+                ModelState.AddModelError(string.Empty, "Error creating supplier on the server.");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Connection error: {ex.Message}");
             }
 
-            ModelState.AddModelError(string.Empty, "Error creating supplier.");
             return Page();
         }
     }

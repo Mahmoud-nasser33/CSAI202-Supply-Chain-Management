@@ -1,5 +1,7 @@
+// Manages HTTP requests and API logic for Shipments.
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+using SupplyChain.Backend.Models;
+using SupplyChain.Backend.Repositories;
 
 namespace SupplyChain.Backend.Controllers
 {
@@ -7,55 +9,100 @@ namespace SupplyChain.Backend.Controllers
     [ApiController]
     public class ShipmentsController : ControllerBase
     {
-        private static List<ShipmentDto> _shipments = new List<ShipmentDto>
+        private readonly IShipmentRepository _shipmentRepository;
+
+        public ShipmentsController(IShipmentRepository shipmentRepository)
         {
-            new ShipmentDto 
-            { 
-                Id = 1, 
-                OriginWarehouse = "Central Hub", 
-                DestinationAddress = "123 Main St, Springfield", 
-                Status = "In Transit",
-                EstimatedArrival = DateTime.Now.AddDays(2),
-                Items = new List<ShipmentItemDto>
-                {
-                    new ShipmentItemDto { ProductName = "Laptop", Quantity = 1 },
-                    new ShipmentItemDto { ProductName = "Mouse", Quantity = 2 }
-                }
-            },
-            new ShipmentDto 
-            { 
-                Id = 2, 
-                OriginWarehouse = "West Coast Distribution", 
-                DestinationAddress = "456 Elm St, Shelbyville", 
-                Status = "Delivered",
-                EstimatedArrival = DateTime.Now.AddDays(-1),
-                Items = new List<ShipmentItemDto>
-                {
-                    new ShipmentItemDto { ProductName = "Monitor", Quantity = 10 }
-                }
-            }
-        };
+            _shipmentRepository = shipmentRepository;
+        }
 
         [HttpGet]
-        public IActionResult GetShipments()
+        public async Task<IActionResult> GetShipments()
         {
-            return Ok(_shipments);
+            try
+            {
+                var shipments = await _shipmentRepository.GetAllShipmentsAsync();
+                return Ok(shipments);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error retrieving shipments", error = ex.Message });
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetShipment(int id)
+        {
+            try
+            {
+                var s = await _shipmentRepository.GetShipmentByIdAsync(id);
+                if (s == null) return NotFound();
+                return Ok(s);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error retrieving shipment", error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateShipment([FromBody] Shipment shipment)
+        {
+            try
+            {
+                var created = await _shipmentRepository.CreateShipmentAsync(shipment);
+                return CreatedAtAction(nameof(GetShipment), new { id = created.ShipmentID }, created);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error creating shipment", error = ex.Message });
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateShipment(int id, [FromBody] Shipment shipment)
+        {
+            try
+            {
+                bool updated = await _shipmentRepository.UpdateShipmentAsync(id, shipment);
+                if (!updated) return NotFound();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error updating shipment", error = ex.Message });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteShipment(int id)
+        {
+            try
+            {
+                bool deleted = await _shipmentRepository.DeleteShipmentAsync(id);
+                if (!deleted) return NotFound();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error deleting shipment", error = ex.Message });
+            }
         }
     }
 
     public class ShipmentDto
     {
         public int Id { get; set; }
-        public string OriginWarehouse { get; set; }
-        public string DestinationAddress { get; set; }
-        public string Status { get; set; }
+        public string? OriginWarehouse { get; set; }
+        public string? DestinationAddress { get; set; }
+        public string? Status { get; set; }
         public DateTime EstimatedArrival { get; set; }
-        public List<ShipmentItemDto> Items { get; set; }
+        public List<ShipmentItemDto>? Items { get; set; }
     }
 
     public class ShipmentItemDto
     {
-        public string ProductName { get; set; }
+        public string ProductName { get; set; } = string.Empty;
         public int Quantity { get; set; }
     }
 }

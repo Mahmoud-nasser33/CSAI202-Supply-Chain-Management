@@ -1,4 +1,7 @@
+// Manages HTTP requests and API logic for Suppliers.
 using Microsoft.AspNetCore.Mvc;
+using SupplyChain.Backend.Models;
+using SupplyChain.Backend.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,46 +11,113 @@ namespace SupplyChain.Backend.Controllers
     [ApiController]
     public class SuppliersController : ControllerBase
     {
-        private static List<SupplierDto> _suppliers = new List<SupplierDto>
+        private readonly ISupplierRepository _supplierRepository;
+
+        public SuppliersController(ISupplierRepository supplierRepository)
         {
-            new SupplierDto { Id = 1, Name = "TechParts Inc.", ContactInfo = "contact@techparts.com", Address = "123 Silicon Valley", LeadTimeDays = 5, Rating = 4.8 },
-            new SupplierDto { Id = 2, Name = "Global Shipping Co.", ContactInfo = "info@globalshipping.com", Address = "456 Logistics Ave", LeadTimeDays = 14, Rating = 4.2 },
-            new SupplierDto { Id = 3, Name = "MegaCorp Supplies", ContactInfo = "sales@megacorp.com", Address = "789 Enterprise Blvd", LeadTimeDays = 3, Rating = 3.5 }
-        };
+            _supplierRepository = supplierRepository;
+        }
 
         [HttpGet]
-        public IActionResult GetSuppliers()
+        public async Task<IActionResult> GetSuppliers()
         {
-            return Ok(_suppliers);
+            try
+            {
+                var suppliers = await _supplierRepository.GetAllSuppliersAsync();
+                var supplierDtos = suppliers.Select(s => new SupplierDto
+                {
+                    Id = s.SupplierID,
+                    Name = s.Name,
+                    ContactInfo = s.Contact_Info,
+                    Email = s.Email,
+                    Address = s.Address,
+                    LeadTimeDays = s.LeadTimeDays,
+                    Rating = (double)s.Rating
+                }).ToList();
+                return Ok(supplierDtos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error retrieving suppliers", error = ex.Message });
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetSupplier(int id)
+        {
+            try
+            {
+                var s = await _supplierRepository.GetSupplierByIdAsync(id);
+                if (s == null) return NotFound();
+                return Ok(new SupplierDto
+                {
+                    Id = s.SupplierID,
+                    Name = s.Name,
+                    ContactInfo = s.Contact_Info,
+                    Email = s.Email,
+                    Address = s.Address,
+                    LeadTimeDays = s.LeadTimeDays,
+                    Rating = (double)s.Rating
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error retrieving supplier", error = ex.Message });
+            }
         }
 
         [HttpPost]
-        public IActionResult CreateSupplier([FromBody] SupplierDto supplier)
+        public async Task<IActionResult> CreateSupplier([FromBody] Supplier supplier)
         {
-            supplier.Id = _suppliers.Any() ? _suppliers.Max(s => s.Id) + 1 : 1;
-            _suppliers.Add(supplier);
-            return CreatedAtAction(nameof(GetSuppliers), new { id = supplier.Id }, supplier);
+            try
+            {
+                var created = await _supplierRepository.CreateSupplierAsync(supplier);
+                return CreatedAtAction(nameof(GetSupplier), new { id = created.SupplierID }, created);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error creating supplier", error = ex.Message });
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateSupplier(int id, [FromBody] Supplier supplier)
+        {
+            try
+            {
+                bool updated = await _supplierRepository.UpdateSupplierAsync(id, supplier);
+                if (!updated) return NotFound();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error updating supplier", error = ex.Message });
+            }
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteSupplier(int id)
+        public async Task<IActionResult> DeleteSupplier(int id)
         {
-            var supplier = _suppliers.FirstOrDefault(s => s.Id == id);
-            if (supplier == null)
+            try
             {
-                return NotFound();
+                bool deleted = await _supplierRepository.DeleteSupplierAsync(id);
+                if (!deleted) return NotFound();
+                return NoContent();
             }
-            _suppliers.Remove(supplier);
-            return NoContent();
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error deleting supplier", error = ex.Message });
+            }
         }
     }
 
     public class SupplierDto
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string ContactInfo { get; set; }
-        public string Address { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? ContactInfo { get; set; }
+        public string? Email { get; set; }
+        public string? Address { get; set; }
         public int LeadTimeDays { get; set; }
         public double Rating { get; set; }
     }

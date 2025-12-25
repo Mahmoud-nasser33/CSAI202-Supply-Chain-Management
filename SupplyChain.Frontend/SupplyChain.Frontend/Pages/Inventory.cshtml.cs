@@ -1,39 +1,60 @@
+// Defines the Inventory.cshtml class/logic for the Supply Chain system.
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Collections.Generic;
+using SupplyChain.Backend.Models;
 
 namespace SupplyChain.Frontend.Pages
 {
     public class InventoryModel : PageModel
     {
-        public List<InventoryItem> InventoryList { get; set; } = new();
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public IActionResult OnPostDelete(int id)
+        public InventoryModel(IHttpClientFactory httpClientFactory)
         {
-            // MOCK BEHAVIOR: Simulate Deletion
-            return RedirectToPage();
+            _httpClientFactory = httpClientFactory;
         }
 
-        public void OnGet()
+        public List<InventoryItem> InventoryList { get; set; } = new();
+
+        public async Task OnGetAsync()
         {
-            // Mock Data based on Schema
-            InventoryList = new List<InventoryItem>
+            try
             {
-                new InventoryItem { InventoryID = 1, ProductName = "Laptop", WarehouseName = "Main Warehouse", QuantityAvailable = 50, ReorderLevel = 10 },
-                new InventoryItem { InventoryID = 2, ProductName = "Smartphone", WarehouseName = "Main Warehouse", QuantityAvailable = 150, ReorderLevel = 20 },
-                new InventoryItem { InventoryID = 3, ProductName = "Headphones", WarehouseName = "Main Warehouse", QuantityAvailable = 8, ReorderLevel = 15 }, // Low Stock
-                new InventoryItem { InventoryID = 4, ProductName = "Monitor", WarehouseName = "East Side Depot", QuantityAvailable = 20, ReorderLevel = 5 },
-                new InventoryItem { InventoryID = 5, ProductName = "Keyboard", WarehouseName = "East Side Depot", QuantityAvailable = 0, ReorderLevel = 10 }  // Out of Stock
-            };
+                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+                var inventory = await client.GetFromJsonAsync<List<InventoryItem>>("api/Inventory");
+                if (inventory != null)
+                {
+                    InventoryList = inventory;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching inventory: {ex.Message}");
+            }
+        }
+
+        public async Task<IActionResult> OnPostDelete(int id)
+        {
+            try
+            {
+                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+                HttpResponseMessage response = await client.DeleteAsync($"api/Inventory/{id}");
+            }
+            catch (Exception)
+            {
+
+            }
+            return RedirectToPage();
         }
 
         public class InventoryItem
         {
             public int InventoryID { get; set; }
-            public string ProductName { get; set; } // Mocked join
-            public string WarehouseName { get; set; } // Mocked join
-            public int QuantityAvailable { get; set; }
-            public int ReorderLevel { get; set; }
+            public string ProductName { get; set; }
+            public string WarehouseName { get; set; }
+            public int Quantity_Available { get; set; }
+            public int Reorder_Level { get; set; }
         }
     }
 }
