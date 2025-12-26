@@ -64,6 +64,10 @@ If the dashboard or pages display **0** for statistics (e.g., 0 Customers, 0 Ord
    ```
 
 ---
+Co-authored-by: Mohamed Tamer <mo.tamer3655@gmail.com>
+Ahmed Noman <ahmednomn033@gmail.com>
+
+
 
 ## 📌 Note on Project Status
 > [!IMPORTANT]  
@@ -76,3 +80,6 @@ If the dashboard or pages display **0** for statistics (e.g., 0 Customers, 0 Ord
 This project is licensed under the MIT License - see the `LICENSE` file for details.
 
 © 2025 Silsila SCM | Strategic Supply Chain Intelligence.
+
+
+
