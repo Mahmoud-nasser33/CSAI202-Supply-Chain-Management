@@ -1,71 +1,124 @@
-// Defines the Customers.cshtml class/logic for the Supply Chain system.
-#nullable enable
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
-using SupplyChain.Backend.Models;
 
 namespace SupplyChain.Frontend.Pages
 {
     public class CustomersModel : PageModel
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
+        public List<CustomerItem> CustomerList { get; set; } = new List<CustomerItem>();
 
-        public CustomersModel(IHttpClientFactory httpClientFactory)
+        public CustomersModel(IConfiguration configuration)
         {
-            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
-        public List<CustomerItem> CustomerList { get; set; } = new();
-        public int TotalRegistered => CustomerList.Count;
-        public int ActiveThisMonth => (int)(CustomerList.Count * 0.77);
-        public string RetentionRate => "88%";
-
-        public async Task OnGetAsync()
+        public void OnGet()
         {
-            try
+            
+            string connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
-                List<CustomerItem> customers = await client.GetFromJsonAsync<List<CustomerItem>>("api/Customers");
-                if (customers != null)
+                connection.Open();
+                string sql = "SELECT CustomerID, Name, Email FROM Customer";
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    CustomerList = customers;
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            CustomerItem customer = new CustomerItem();
+                            customer.CustomerID = reader.GetInt32(0);
+                            customer.Name = reader.GetString(1);
+                            customer.Email = reader.GetString(2);
+                            CustomerList.Add(customer);
+                        }
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error fetching customers: {ex.Message}");
             }
         }
 
-        public async Task<IActionResult> OnPostDelete(int id)
+        public IActionResult OnPost()
         {
-            try
+            
+            string newName = Request.Form["NewCustomerName"];
+            string newEmail = Request.Form["NewCustomerEmail"];
+
+            string connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
-                HttpResponseMessage response = await client.DeleteAsync($"api/Customers/{id}");
-                if (!response.IsSuccessStatusCode)
+                connection.Open();
+                string sql = "INSERT INTO Customer (Name, Email) VALUES (@Name, @Email)";
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-
+                    command.Parameters.AddWithValue("@Name", newName);
+                    command.Parameters.AddWithValue("@Email", newEmail);
+                    command.ExecuteNonQuery();
                 }
-            }
-            catch (Exception)
-            {
-
             }
             return RedirectToPage();
         }
 
-        public class CustomerItem
+        public IActionResult OnPostDelete(int id)
         {
-            public int CustomerID { get; set; }
-            public string Name { get; set; }
-            public string? Email { get; set; }
-            public string? Phone { get; set; }
-            public string? Address { get; set; }
-            public string? City { get; set; }
-            public string? Country { get; set; }
-            public int TotalOrders { get; set; }
+            string connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                
+              
+                List<int> orderIds = new List<int>();
+                string getOrders = "SELECT OrderID FROM Purchase_Order WHERE CustomerID = @ID";
+                using (SqlCommand cmd = new SqlCommand(getOrders, connection))
+                {
+                    cmd.Parameters.AddWithValue("@ID", id);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while(reader.Read()) orderIds.Add(reader.GetInt32(0));
+                    }
+                }
+
+               
+                foreach(int orderId in orderIds)
+                {
+                    string[] orderDeps = { 
+                        "DELETE FROM Order_Details WHERE OrderID = @OID",
+                        "DELETE FROM Shipment WHERE OrderID = @OID",
+                        "DELETE FROM Payment WHERE OrderID = @OID"
+                    };
+                    foreach(string depSql in orderDeps) {
+                        using (SqlCommand depCmd = new SqlCommand(depSql, connection)) {
+                            depCmd.Parameters.AddWithValue("@OID", orderId);
+                            depCmd.ExecuteNonQuery();
+                        }
+                    }
+                    
+               
+                    using (SqlCommand delOrder = new SqlCommand("DELETE FROM Purchase_Order WHERE OrderID = @OID", connection)) {
+                        delOrder.Parameters.AddWithValue("@OID", orderId);
+                        delOrder.ExecuteNonQuery();
+                    }
+                }
+
+                
+                string sql = "DELETE FROM Customer WHERE CustomerID = @ID";
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@ID", id);
+                    command.ExecuteNonQuery();
+                }
+            }
+            return RedirectToPage();
         }
+    }
+
+    public class CustomerItem
+    {
+        public int CustomerID { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
     }
 }

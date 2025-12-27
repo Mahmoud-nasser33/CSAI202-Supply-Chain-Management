@@ -1,106 +1,66 @@
 @page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @model SupplyChain.Frontend.Pages.SuppliersModel
 @{
     ViewData["Title"] = "Suppliers";
 }
 
-<div class="container-bento py-4">
-
-    <div class="d-flex justify-content-between align-items-center mb-4 animate-enter">
-        <div>
-            <h2 class="fw-bold mb-0">Supplier Directory</h2>
-            <p class="text-muted mb-0">Global partner network</p>
-        </div>
-        <div>
-            <a href="/CreateSupplier" class="btn btn-primary btn-lg shadow-sm">
-                <i class="bi bi-building-add me-2"></i> Onboard Strategic Supplier
-            </a>
-        </div>
-    </div>
-
-    <div class="bento-grid mb-5">
-
-        <div class="card border-0 shadow-sm glass-panel bg-gradient-primary text-white span-col-2 animate-enter delay-1" style="background: linear-gradient(rgba(16, 185, 129, 0.8), rgba(5, 150, 105, 0.9)), url('/images/logistics-ship.png') center/cover !important;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="icon-container-circle bg-white bg-opacity-25">
-                        <i class="bi bi-globe2 fs-4 text-white"></i>
-                    </div>
-                </div>
-                <h2 class="display-4 fw-bold mb-0">@Model.TotalSuppliers</h2>
-                <small class="text-white text-opacity-75">Active Global Partners</small>
-            </div>
-        </div>
-
-        <div class="card border-0 shadow-sm glass-panel animate-enter delay-2">
-            <div class="card-body">
-                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="icon-container-circle bg-info bg-opacity-10 text-info">
-                        <i class="bi bi-shield-check fs-4"></i>
-                    </div>
-                     <span class="text-info small fw-bold">Compliance</span>
-                </div>
-                <h2 class="fw-bold mb-0 text-dark">94%</h2>
-                <small class="text-muted">Contract adherence</small>
-            </div>
-        </div>
-
-        <div class="card border-0 shadow-sm glass-panel animate-enter delay-2">
-            <div class="card-body">
-                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="icon-container-circle bg-secondary bg-opacity-10 text-secondary">
-                        <i class="bi bi-clock-history fs-4"></i>
-                    </div>
-                     <span class="text-secondary small fw-bold">Lead Time</span>
-                </div>
-                <h2 class="fw-bold mb-0 text-dark">4.2d</h2>
-                <small class="text-muted">Avg fulfillment</small>
-            </div>
-        </div>
-    </div>
-
-    <h4 class="fw-bold mb-3 animate-enter delay-3">Partner List</h4>
-
-    <div class="bento-grid">
-        @if (Model.Suppliers != null && Model.Suppliers.Any())
-        {
-            @foreach (var supplier in Model.Suppliers)
-            {
-                <div class="card border-0 shadow-sm glass-panel h-100 animate-enter delay-4">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between mb-3">
-                             <div class="bg-light rounded-circle p-3 text-primary">
-                                 <i class="bi bi-building fs-4"></i>
-                             </div>
-                             <span class="badge bg-warning text-dark align-self-start"><i class="bi bi-star-fill"></i> @supplier.Rating</span>
-                        </div>
-                        <h4 class="fw-bold text-dark mb-1">@supplier.Name</h4>
-                         <p class="text-muted small mb-3"><i class="bi bi-geo-alt"></i> @supplier.Address</p>
-
-                        <div class="mt-auto">
-                            <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded mb-3">
-                                <span class="small text-muted">Lead Time</span>
-                                <span class="fw-bold text-dark">@supplier.LeadTimeDays Days</span>
-                            </div>
-
-                            <div class="d-grid gap-2">
-                                <a href="mailto:@supplier.Email" class="btn btn-outline-secondary btn-sm">Contact</a>
-                                <a asp-page="/EditSupplier" asp-route-id="@supplier.Id" class="btn btn-outline-primary btn-sm">Modify Parameters Partner</a>
-                                <form method="post" asp-page-handler="Delete" asp-route-id="@supplier.Id">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">Remove</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-        }
-        else
-        {
-             <div class="span-col-4 text-center py-5 text-muted glass-panel">
-                <i class="bi bi-building-exclamation fs-1 d-block mb-3"></i>
-                No suppliers in the network.
-            </div>
-        }
-    </div>
+<div class="page-header">
+    <h1>Supplier Network</h1>
+    <p class="text-muted">Manage global vendor relationships and performance ratings.</p>
 </div>
+
+
+<img src="/images/service.png" alt="Suppliers" class="illustrative-img" />
+
+
+<h3>Register New Vendor</h3>
+<div class="classic-form">
+    <form method="post">
+        <div>
+            <label>Vendor Name</label>
+            <input type="text" name="NewSupplierName" placeholder="e.g. Global Tech Supplies" />
+        </div>
+        <div>
+            <label>Contact Email</label>
+            <input type="email" name="NewSupplierEmail" placeholder="contact@vendor.com" />
+        </div>
+        <div>
+            <label>Initial Rating (0-5)</label>
+            <input type="text" name="NewSupplierRating" placeholder="5.0" />
+        </div>
+        <button type="submit">Onboard Vendor</button>
+    </form>
+</div>
+
+<hr />
+
+
+<h3>Active Supplier List</h3>
+<table class="classic-table">
+    <thead>
+        <tr>
+            <th>Vendor Name</th>
+            <th>Email Contact</th>
+            <th>Performance Rating</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.SupplierList)
+        {
+            <tr>
+                <td style="font-weight: 600;">@item.Name</td>
+                <td>@item.Email</td>
+                <td>
+                    <span style="color: var(--primary); font-weight: 700;">★ @item.Rating.ToString("F1")</span>
+                </td>
+                <td>
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@item.SupplierID" onsubmit="return confirm('Remove this supplier?');" style="margin:0;">
+                         <button type="submit" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold; padding:0;">Remove</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

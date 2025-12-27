@@ -1,102 +1,107 @@
-// Defines the Products.cshtml class/logic for the Supply Chain system.
-#nullable enable
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
-using System.Net.Http.Json;
-using System.Net.Http;
-using System.Linq;
-using System;
-using SupplyChain.Backend.Models;
 
 namespace SupplyChain.Frontend.Pages
 {
     public class ProductsModel : PageModel
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
+        public List<ProductItem> ProductList { get; set; } = new List<ProductItem>();
 
-        public List<ProductDto> Products { get; set; } = new List<ProductDto>();
-        public int CategoryCount => Products.Select(p => p.Category).Distinct().Count();
-        public int SupplierCount => Products.Select(p => p.Supplier).Distinct().Count();
-
-        public ProductsModel(IHttpClientFactory httpClientFactory)
+        public ProductsModel(IConfiguration configuration)
         {
-            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
-        public async Task OnGet()
+        public void OnGet()
         {
-            try
+           
+            string connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
-                HttpResponseMessage response = await client.GetAsync("api/Products");
-
-                if (response.IsSuccessStatusCode)
+                connection.Open();
+                string sqlQuery = "SELECT ProductID, Product_Name, Price FROM Product";
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
-                    List<ApiProductDto> apiProducts = await response.Content.ReadFromJsonAsync<List<ApiProductDto>>();
-
-                    if (apiProducts != null && apiProducts.Count > 0)
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-
-                        Products = apiProducts.Select(p => new ProductDto
+                        while (reader.Read())
                         {
-                            Id = p.Id,
-                            Name = p.Name,
-                            SKU = $"PRD-{p.Id:D4}",
-                            Category = p.CategoryName ?? "Uncategorized",
-                            Price = p.Price,
-                            StockQuantity = p.StockQuantity,
-                            Supplier = p.SupplierName ?? "N/A",
-                            Description = p.Description ?? string.Empty
-                        }).ToList();
-                    }
-                    else
-                    {
-                        Products = new List<ProductDto>();
+                            ProductItem item = new ProductItem();
+                            item.ProductID = reader.GetInt32(0);
+                            item.Name = reader.GetString(1);
+                            item.Price = reader.GetDecimal(2);
+                            ProductList.Add(item);
+                        }
                     }
                 }
-                else
+            }
+        }
+
+        public IActionResult OnPost()
+        {
+            
+            string newName = Request.Form["NewProductName"];
+            string newPriceStr = Request.Form["NewProductPrice"];
+
+            string connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string sql = "INSERT INTO Product (Product_Name, Price) VALUES (@Name, @Price)";
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-
-                    string errorContent = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"API call failed: {response.StatusCode} - {errorContent}");
-                    Products = new List<ProductDto>();
+                    command.Parameters.AddWithValue("@Name", newName);
+                    
+                    decimal price = 0;
+                    decimal.TryParse(newPriceStr, out price);
+                    command.Parameters.AddWithValue("@Price", price);
+                    
+                    command.ExecuteNonQuery();
                 }
             }
-            catch (Exception ex)
-            {
-
-                System.Diagnostics.Debug.WriteLine($"Error fetching products: {ex.Message}");
-                Products = new List<ProductDto>();
-            }
+            return RedirectToPage();
         }
 
-        private class ApiProductDto
+        public IActionResult OnPostDelete(int id)
         {
-            public int Id { get; set; }
-            public string Name { get; set; } = string.Empty;
-            public decimal Price { get; set; }
-            public string Description { get; set; } = string.Empty;
-            public int CategoryID { get; set; }
-            public string? CategoryName { get; set; }
-            public int StockQuantity { get; set; }
-            public string? SupplierName { get; set; }
-        }
-
-        public async Task<IActionResult> OnPostDeleteAsync(int id)
-        {
-            HttpClient client = _httpClientFactory.CreateClient("BackendApi");
-
-            HttpResponseMessage response = await client.DeleteAsync($"api/Products/{id}");
-
-            if (response.IsSuccessStatusCode)
+            string connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                return RedirectToPage();
+                connection.Open();
+                
+             
+                string sqlDep1 = "DELETE FROM Inventory WHERE ProductID = @ID";
+                using (SqlCommand cmd = new SqlCommand(sqlDep1, connection)) {
+                    cmd.Parameters.AddWithValue("@ID", id);
+                    cmd.ExecuteNonQuery();
+                }
+
+                string sqlDep2 = "DELETE FROM Order_Details WHERE ProductID = @ID";
+                using (SqlCommand cmd = new SqlCommand(sqlDep2, connection)) {
+                    cmd.Parameters.AddWithValue("@ID", id);
+                    cmd.ExecuteNonQuery();
+                }
+
+                
+                string sql = "DELETE FROM Product WHERE ProductID = @ID";
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@ID", id);
+                    command.ExecuteNonQuery();
+                }
             }
-            else
-            {
-                return Page();
-            }
+            return RedirectToPage();
         }
+    }
+
+    public class ProductItem
+    {
+        public int ProductID { get; set; }
+        public string Name { get; set; }
+        public decimal Price { get; set; }
     }
 }

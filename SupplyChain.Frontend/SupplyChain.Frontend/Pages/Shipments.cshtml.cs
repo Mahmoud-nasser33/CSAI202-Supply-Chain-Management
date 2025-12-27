@@ -1,76 +1,115 @@
-// Defines the Shipments.cshtml class/logic for the Supply Chain system.
-#nullable enable
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
-using SupplyChain.Backend.Models;
 
 namespace SupplyChain.Frontend.Pages
 {
     public class ShipmentsModel : PageModel
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
+        public List<ShipmentItem> ShipmentList { get; set; } = new List<ShipmentItem>();
 
-        public ShipmentsModel(IHttpClientFactory httpClientFactory)
+        public ShipmentsModel(IConfiguration configuration)
         {
-            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
-        public List<ShipmentDto> Shipments { get; set; } = new List<ShipmentDto>();
-
-        public async Task OnGetAsync()
+        public void OnGet()
         {
-            try
+            // ...
+            string connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
-                var shipments = await client.GetFromJsonAsync<List<ShipmentDto>>("api/Shipments");
-                if (shipments != null)
+                connection.Open();
+                string sql = @"
+                    SELECT 
+                        s.ShipmentID, 
+                        s.OrderID, 
+                        w.Name, 
+                        s.Status, 
+                        s.Shipped_Via,
+                        c.Name
+                    FROM Shipment s
+                    JOIN Warehouse w ON s.WarehouseID = w.WarehouseID
+                    JOIN Purchase_Order po ON s.OrderID = po.OrderID
+                    JOIN Customer c ON po.CustomerID = c.CustomerID";
+
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    Shipments = shipments;
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            ShipmentItem item = new ShipmentItem();
+                            item.ShipmentID = reader.GetInt32(0);
+                            item.OrderID = reader.GetInt32(1);
+                            item.WarehouseName = reader.GetString(2);
+                            item.Status = reader.GetString(3);
+                            if (!reader.IsDBNull(4)) item.ShippedVia = reader.GetString(4);
+                            item.CustomerName = reader.GetString(5);
+                            
+                            ShipmentList.Add(item);
+                        }
+                    }
                 }
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error fetching shipments: {ex.Message}");
-            }
         }
 
-        public async Task<IActionResult> OnPostDelete(int id)
+        public IActionResult OnPost()
         {
-            try
-            {
-                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
-                HttpResponseMessage response = await client.DeleteAsync($"api/Shipments/{id}");
-            }
-            catch (Exception)
-            {
+            
+            string orderIdStr = Request.Form["NewOrderID"];
+            string whIdStr = Request.Form["NewWarehouseID"];
+            string via = Request.Form["NewShippedVia"];
 
+            string connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string sql = "INSERT INTO Shipment (OrderID, WarehouseID, Shipped_Via) VALUES (@OrderID, @WarehouseID, @ShippedVia)";
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    int orderId = 0; int.TryParse(orderIdStr, out orderId);
+                    command.Parameters.AddWithValue("@OrderID", orderId);
+                    
+                    int whId = 0; int.TryParse(whIdStr, out whId);
+                    command.Parameters.AddWithValue("@WarehouseID", whId);
+                    
+                    command.Parameters.AddWithValue("@ShippedVia", via ?? (object)DBNull.Value);
+                    
+                    command.ExecuteNonQuery();
+                }
+            }
+            return RedirectToPage();
+        }
+
+        public IActionResult OnPostDelete(int id)
+        {
+            string connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string sql = "DELETE FROM Shipment WHERE ShipmentID = @ID";
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@ID", id);
+                    command.ExecuteNonQuery();
+                }
             }
             return RedirectToPage();
         }
     }
 
-    public class ShipmentDto
+    public class ShipmentItem
     {
         public int ShipmentID { get; set; }
         public int OrderID { get; set; }
-        public int WarehouseID { get; set; }
-        public string? WarehouseName { get; set; }
-        public string? CustomerName { get; set; }
-        public string? Status { get; set; }
-        public string? Shipped_Via { get; set; }
-        public DateTime? Shipment_Date { get; set; }
-
-        public int Progress => Status == "Delivered" ? 100 : (Status == "In Transit" ? 60 : 20);
-        public List<ShipmentItemDto> Items { get; set; } = new();
-    }
-
-    public class ShipmentItemDto
-    {
-        public string ProductName { get; set; }
-        public int Quantity { get; set; }
+        public string WarehouseName { get; set; }
+        public string Status { get; set; }
+        public string ShippedVia { get; set; }
+        public string CustomerName { get; set; }
     }
 }

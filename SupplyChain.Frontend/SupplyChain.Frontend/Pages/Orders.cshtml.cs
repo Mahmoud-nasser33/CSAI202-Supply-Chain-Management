@@ -1,118 +1,126 @@
-// Defines the Orders.cshtml class/logic for the Supply Chain system.
-#nullable enable
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Json;
-using SupplyChain.Backend.Models;
 
 namespace SupplyChain.Frontend.Pages
 {
     public class OrdersModel : PageModel
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
+        public List<OrderItem> OrderList { get; set; } = new List<OrderItem>();
 
-        public List<OrderDto> Orders { get; set; } = new List<OrderDto>();
-        public string SearchString { get; set; }
-
-        public OrdersModel(IHttpClientFactory httpClientFactory)
+        public OrdersModel(IConfiguration configuration)
         {
-            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
-        public async Task<IActionResult> OnPostDelete(int id)
+        public void OnGet()
         {
-            try
+         
+            string connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+                connection.Open();
+                string sql = @"
+                    SELECT 
+                        po.OrderID, 
+                        c.Name, 
+                        po.OrderDate, 
+                        po.Status, 
+                        po.TotalAmount 
+                    FROM Purchase_Order po
+                    JOIN Customer c ON po.CustomerID = c.CustomerID";
 
-                HttpResponseMessage response = await client.DeleteAsync($"api/Orders/{id}");
-
-                if (response.IsSuccessStatusCode)
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    return RedirectToPage();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            OrderItem item = new OrderItem();
+                            item.OrderID = reader.GetInt32(0);
+                            item.CustomerName = reader.GetString(1);
+                            item.OrderDate = reader.GetDateTime(2);
+                            item.Status = reader.GetString(3);
+                            item.TotalAmount = reader.GetDecimal(4);
+                            OrderList.Add(item);
+                        }
+                    }
                 }
             }
-            catch (Exception)
-            {
+        }
 
+        public IActionResult OnPost()
+        {
+          
+            string custIdStr = Request.Form["NewCustomerID"];
+            string totalStr = Request.Form["NewOrderTotal"];
+
+            string connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                string sql = "INSERT INTO Purchase_Order (CustomerID, TotalAmount) VALUES (@CustomerID, @TotalAmount)";
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    int custId = 0;
+                    int.TryParse(custIdStr, out custId);
+                    command.Parameters.AddWithValue("@CustomerID", custId);
+                    
+                    decimal total = 0;
+                    decimal.TryParse(totalStr, out total);
+                    command.Parameters.AddWithValue("@TotalAmount", total);
+                    
+                    command.ExecuteNonQuery();
+                }
             }
             return RedirectToPage();
         }
 
-        public async Task OnGet(string searchString)
+        public IActionResult OnPostDelete(int id)
         {
-            SearchString = searchString;
-
-            try
+            string connectionString = _configuration.GetConnectionString("DefaultConnection");
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                HttpClient client = _httpClientFactory.CreateClient("BackendApi");
-                HttpResponseMessage response = await client.GetAsync("api/Orders");
+                connection.Open();
+                
+                
+                string[] dependencies = { 
+                    "DELETE FROM Order_Details WHERE OrderID = @ID",
+                    "DELETE FROM Shipment WHERE OrderID = @ID",
+                    "DELETE FROM Payment WHERE OrderID = @ID"
+                };
 
-                if (response.IsSuccessStatusCode)
+                foreach (string sqlDep in dependencies)
                 {
-                    var apiOrders = await response.Content.ReadFromJsonAsync<List<ApiOrderDto>>();
-
-                    if (apiOrders != null && apiOrders.Count > 0)
+                    using (SqlCommand cmd = new SqlCommand(sqlDep, connection))
                     {
-                        var allOrders = apiOrders.Select(o => new OrderDto
-                        {
-                            OrderID = o.OrderID,
-                            OrderDate = o.OrderDate,
-                            Status = o.Status,
-                            TotalAmount = o.TotalAmount ?? 0,
-                            CustomerName = o.CustomerName ?? "Unknown"
-                        }).ToList();
-
-                        if (!string.IsNullOrEmpty(searchString))
-                        {
-                            Orders = allOrders.Where(o =>
-                                o.OrderID.ToString().Contains(searchString) ||
-                                o.Status.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
-                                (o.CustomerName != null && o.CustomerName.Contains(searchString, StringComparison.OrdinalIgnoreCase))).ToList();
-                        }
-                        else
-                        {
-                            Orders = allOrders;
-                        }
-                    }
-                    else
-                    {
-                        Orders = new List<OrderDto>();
+                        cmd.Parameters.AddWithValue("@ID", id);
+                        cmd.ExecuteNonQuery();
                     }
                 }
-                else
-                {
 
-                    Orders = new List<OrderDto>();
+           
+                string sql = "DELETE FROM Purchase_Order WHERE OrderID = @ID";
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@ID", id);
+                    command.ExecuteNonQuery();
                 }
             }
-            catch (Exception ex)
-            {
-
-                Orders = new List<OrderDto>();
-            }
-        }
-
-        private class ApiOrderDto
-        {
-            public int OrderID { get; set; }
-            public int CustomerID { get; set; }
-            public DateTime OrderDate { get; set; }
-            public string Status { get; set; } = string.Empty;
-            public decimal? TotalAmount { get; set; }
-            public string? CustomerName { get; set; }
+            return RedirectToPage();
         }
     }
 
-    public class OrderDto
+    public class OrderItem
     {
         public int OrderID { get; set; }
+        public string CustomerName { get; set; }
         public DateTime OrderDate { get; set; }
         public string Status { get; set; }
         public decimal TotalAmount { get; set; }
-        public string CustomerName { get; set; } = string.Empty;
     }
 }

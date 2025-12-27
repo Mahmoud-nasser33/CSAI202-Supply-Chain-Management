@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SupplyChainSystem\SupplyChain.Backend\SupplyChain.Backend.csproj" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
   </ItemGroup>
 
   <PropertyGroup>

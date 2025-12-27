@@ -1,246 +1,51 @@
-﻿@page
-@model IndexModel
+@page
+@model SupplyChain.Frontend.Pages.IndexModel
 @{
     ViewData["Title"] = "Dashboard";
 }
 
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
-        <div>
-            <h1 class="h2 fw-700 mb-1" style="font-family: 'Inter', sans-serif !important;">System Dashboard</h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="#">Home</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-                </ol>
-            </nav>
-        </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-white border shadow-sm"><i class="bi bi-calendar3 me-2"></i>Last 30 Days</button>
-            <button class="btn btn-primary shadow-sm"><i class="bi bi-plus-lg me-2"></i>New Action</button>
-        </div>
+<div class="dashboard-header">
+    <h1>System Dashboard</h1>
+    <p class="text-muted">High-level overview of global supply chain operations and key metrics.</p>
+</div>
+
+
+<img src="/images/hero.png" alt="Supply Chain Global" class="hero-banner" />
+
+<div class="dashboard-grid">
+    
+    <div class="stat-card">
+        <h4>Product Catalog</h4>
+        <div class="value">@Model.TotalProducts</div>
+        <p style="font-size: 0.95rem; color: var(--text-muted); font-weight: 500;">Units registered</p>
     </div>
 
-    <div class="bento-grid">
+    
+    <div class="stat-card">
+        <h4>Customer Base</h4>
+        <div class="value">@Model.TotalCustomers</div>
+        <p style="font-size: 0.95rem; color: var(--text-muted); font-weight: 500;">Active global clients</p>
+    </div>
 
-        <div class="card border-0 shadow-sm glass-panel span-col-2 animate-enter delay-1 overflow-hidden" style="min-height: 240px; background: linear-gradient(rgba(255,255,255,0.65), rgba(255,255,255,0.8)), url('/images/modern-warehouse.png') center/cover;">
-            <div class="card-body p-4 d-flex flex-column justify-content-between">
-                <div>
-                   <div class="d-flex justify-content-between align-items-start mb-3">
-                        <span class="badge bg-dark text-white rounded-pill px-3 py-2 small fw-bold">
-                            <i class="bi bi-cpu-fill me-1"></i> AI PREDICTIVE ENGINE
-                        </span>
-                        <div class="text-primary small fw-bold animate-pulse">LIVE ANALYTICS</div>
-                   </div>
-                <h3 class="fw-bold mb-3" style="font-family: 'Inter', sans-serif !important;">Operational Optimization</h3>
-
-                    <div id="aiInsightsCarousel" class="carousel slide" data-bs-ride="carousel">
-                        <div class="carousel-inner">
-                            <div class="carousel-item active">
-                                <p class="lead text-secondary mb-0">
-                                    <i class="bi bi-lightbulb-fill text-warning me-2"></i>
-                                    AI processing: Optimization identified potential efficiency gains in <strong>Core Logistics</strong>.
-                                </p>
-                            </div>
-                            <div class="carousel-item">
-                                <p class="lead text-secondary mb-0">
-                                    <i class="bi bi-shield-exclamation text-primary me-2"></i>
-                                    Global monitoring active: All systems reporting operational alignment.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="progress mt-4" style="height: 6px; background: rgba(0,0,0,0.05);">
-                    <div class="progress-bar bg-primary" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card border-0 shadow-sm glass-panel animate-enter delay-2 overflow-hidden">
-            <div class="card-body d-flex flex-column justify-content-between p-4">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="text-secondary small fw-800 text-uppercase tracking-wider" style="font-family: 'Outfit', sans-serif;">Live Revenue</span>
-                    <div class="bg-success bg-opacity-10 text-success rounded-circle p-2">
-                        <i class="bi bi-currency-dollar fs-5"></i>
-                    </div>
-                </div>
-                <div>
-                    <h2 class="fw-800 mb-0" style="font-family: 'Inter', sans-serif !important;">@Model.Summary.TotalRevenue.ToString("C0")</h2>
-                    <div class="d-flex align-items-center gap-2 mt-2">
-                         <span class="badge bg-primary bg-opacity-25 text-primary rounded-pill px-2 py-1 small">
-                            <i class="bi bi-activity"></i> Active
-                        </span>
-                        <span class="text-light small">Live monitoring</span>
-                    </div>
-                </div>
-                <div class="mt-4" style="height: 60px; width: 100%; margin-bottom: -1.5rem;">
-                    <canvas id="revenueChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="card border-0 shadow-sm glass-panel animate-enter delay-2 overflow-hidden">
-            <div class="card-body d-flex flex-column justify-content-between p-4">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="text-secondary small fw-800 text-uppercase tracking-wider" style="font-family: 'Outfit', sans-serif;">System Status</span>
-                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2">
-                        <i class="bi bi-shield-check fs-5"></i>
-                    </div>
-                </div>
-                <div>
-                    <h2 class="fw-800 mb-0" style="font-family: 'Inter', sans-serif !important;">Optimal</h2>
-                    <div class="d-flex align-items-center gap-2 mt-2">
-                         <span class="text-primary fw-bold small">Direct Database Connection</span>
-                         <div class="flex-grow-1 bg-primary bg-opacity-10 rounded-pill" style="height: 4px;">
-                            <div class="bg-primary rounded-pill h-100" style="width: 100%;"></div>
-                         </div>
-                    </div>
-                </div>
-                 <p class="text-light small mb-0 mt-3">Verified by system governance.</p>
-            </div>
-        </div>
-
-        <a href="/Orders" class="text-decoration-none animate-enter delay-3">
-            <div class="card h-100 border-0 shadow-sm glass-panel hover-scale overflow-hidden" style="background: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.85)), url('/images/modern-warehouse.png') center/cover;">
-                <div class="card-body p-4 text-center">
-                    <div class="icon-container-circle bg-primary-solid mb-3">
-                        <i class="bi bi-cart-plus"></i>
-                    </div>
-                    <h6 class="fw-bold text-dark mb-0">Register Procurement</h6>
-                </div>
-            </div>
-        </a>
-
-        <a href="/Products" class="text-decoration-none animate-enter delay-3">
-            <div class="card h-100 border-0 shadow-sm glass-panel hover-scale overflow-hidden" style="background: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.85)), url('/images/product-parts.png') center/cover;">
-                <div class="card-body p-4 text-center">
-                    <div class="icon-container-circle bg-primary-solid mb-3">
-                        <i class="bi bi-box-seam"></i>
-                    </div>
-                    <h6 class="fw-bold text-dark mb-0">Register Inventory</h6>
-                </div>
-            </div>
-        </a>
-
-         <a href="/Suppliers" class="text-decoration-none animate-enter delay-4">
-            <div class="card h-100 border-0 shadow-sm glass-panel hover-scale overflow-hidden" style="background: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.85)), url('/images/logistics-ship.png') center/cover;">
-                <div class="card-body p-4 text-center">
-                    <div class="icon-container-circle bg-primary-solid mb-3">
-                        <i class="bi bi-people"></i>
-                    </div>
-                    <h6 class="fw-bold text-dark mb-0">Onboard Partner</h6>
-                </div>
-            </div>
-        </a>
-
-        <div class="card border-0 shadow-sm glass-panel span-row-2 animate-enter delay-5">
-            <div class="card-header bg-transparent border-bottom-0 pt-0 px-0">
-                <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history text-muted"></i> Activity</h5>
-            </div>
-            <div class="card-body px-0" style="max-height: 400px; overflow-y: auto;">
-                @if (Model.Summary.RecentActivity.Any())
-                {
-                    @foreach (var activity in Model.Summary.RecentActivity)
-                    {
-                        <div class="d-flex mb-4 px-3">
-                            <div class="flex-shrink-0 me-3">
-                                <div class="bg-light p-2 rounded-circle">
-                                    <i class="bi @(activity.Type.Contains("Order") ? "bi-cart text-primary" : "bi-activity text-secondary")"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <p class="mb-1 small fw-bold">@activity.Description</p>
-                                <span class="text-muted small" style="font-size: 0.75rem;">@activity.Date.ToString("g")</span>
-                            </div>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <p class="text-center text-muted py-5">No recent activity found.</p>
-                }
-            </div>
-            <div class="card-footer bg-transparent border-top-0 text-center">
-                 <a href="/Notifications" class="text-decoration-none small text-primary fw-bold">Access Full Metadata</a>
-            </div>
-        </div>
-
-        <a href="/Shipments" class="text-decoration-none animate-enter delay-4">
-            <div class="card h-100 border-0 shadow-sm hover-scale text-center py-4 glass-panel overflow-hidden" style="background: linear-gradient(rgba(245, 158, 11, 0.7), rgba(217, 119, 6, 0.85)), url('/images/logistics-ship.png') center/cover !important;">
-                <div class="card-body">
-                    <div class="icon-container-circle bg-white bg-opacity-25 mb-3 text-white">
-                        <i class="bi bi-truck"></i>
-                    </div>
-                    <h5 class="fw-bold text-white">Asset Synchronization</h5>
-                </div>
-            </div>
-        </a>
-
-        <a href="/CreateWarehouse" class="text-decoration-none animate-enter delay-5">
-            <div class="card h-100 border-0 shadow-sm hover-scale text-center py-4 glass-panel overflow-hidden" style="background: linear-gradient(rgba(236, 72, 153, 0.7), rgba(190, 24, 93, 0.85)), url('/images/modern-warehouse.png') center/cover !important;">
-                <div class="card-body">
-                    <div class="icon-container-circle bg-white bg-opacity-25 mb-3 text-white">
-                        <i class="bi bi-building-add"></i>
-                    </div>
-                    <h5 class="fw-bold text-white">Warehouse</h5>
-                </div>
-            </div>
-        </a>
-
-        <a href="/CreateUser" class="text-decoration-none animate-enter delay-5">
-            <div class="card h-100 border-0 shadow-sm hover-scale text-center py-4 bg-gradient-dark glass-panel" style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%) !important;">
-                <div class="card-body">
-                    <div class="bg-white bg-opacity-25 rounded-circle d-inline-flex p-3 mb-3 text-white">
-                        <i class="bi bi-person-plus fs-3"></i>
-                    </div>
-                    <h5 class="fw-bold text-white">Initialize User Account</h5>
-                </div>
-            </div>
-        </a>
-
-        <div class="card border-0 shadow-sm glass-panel span-col-3 animate-enter delay-6 overflow-hidden">
-            <div class="card-header bg-transparent py-4 px-4 border-bottom">
-                <h5 class="mb-0 fw-800" style="font-family: 'Outfit', sans-serif;"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Critical Interventions</h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush bg-transparent">
-                    <a href="/Inventory" class="list-group-item list-group-item-action bg-transparent d-flex justify-content-between align-items-center py-4 px-4 border-bottom border-light">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-2 me-3">
-                                <i class="bi bi-box-seam fs-5"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-0 fw-bold text-dark" style="font-family: 'Outfit', sans-serif;">Inventory Advisory</h6>
-                                <small class="text-secondary">@Model.Summary.LowStockCount items tracked below threshold</small>
-                            </div>
-                        </div>
-                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-3 py-2">Monitor</span>
-                    </a>
-                    <a href="/Orders" class="list-group-item list-group-item-action bg-transparent d-flex justify-content-between align-items-center py-4 px-4">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-3">
-                                <i class="bi bi-clipboard-check fs-5"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-0 fw-bold text-dark" style="font-family: 'Outfit', sans-serif;">Authorizations</h6>
-                                <small class="text-secondary">Pending purchase order approvals</small>
-                            </div>
-                        </div>
-                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2">In Review</span>
-                    </a>
-                </div>
-            </div>
-        </div>
+    
+    <div class="stat-card">
+        <h4>Pending Orders</h4>
+        <div class="value">12</div>
+        <p style="font-size: 0.95rem; color: var(--text-muted); font-weight: 500;">Ready for processing</p>
     </div>
 </div>
 
-<div class="ticker-wrap border-top bg-white bg-opacity-75" style="backdrop-filter: blur(10px); height: 3rem;">
-    <div class="ticker">
-        <div class="ticker__item text-dark fw-bold" style="font-family: 'Outfit', sans-serif;"><i class="bi bi-broadcast text-danger animate-pulse"></i> LIVE CORE:</div>
-        <div class="ticker__item text-secondary"><i class="bi bi-cpu"></i> Predictor: Standard Operations Flow</div>
-        <div class="ticker__item text-secondary"><i class="bi bi-truck"></i> Logistics Channel: Active Tracking</div>
-        <div class="ticker__item text-secondary"><i class="bi bi-currency-dollar"></i> Financials: Consolidated Overview</div>
-        <div class="ticker__item text-secondary"><i class="bi bi-activity text-success"></i> Governance: Real-time Compliance</div>
+<div class="dashboard-info" style="display: flex; gap: 3rem; align-items: start;">
+    <div style="flex: 1;">
+        <h3>Operational Insights</h3>
+        <p>This dashboard provides real-time visibility into your logistical network. Monitor stock levels, track purchase orders, and manage customer relations from a single, centralized interface designed for professional efficiency.</p>
+        <div style="display: flex; gap: 1.5rem; margin-top: 2rem;">
+            <a href="/Products" style="background: var(--primary); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 700; transition: all 0.2s;">Go to Catalog</a>
+            <a href="/Orders" style="border: 2px solid var(--primary); color: var(--primary); padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 700; transition: all 0.2s;">Recent Orders</a>
+        </div>
+    </div>
+    
+    <div style="flex: 1;">
+        <img src="/images/service.png" alt="Global Logistics Support" style="width: 100%; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.05);" />
     </div>
 </div>

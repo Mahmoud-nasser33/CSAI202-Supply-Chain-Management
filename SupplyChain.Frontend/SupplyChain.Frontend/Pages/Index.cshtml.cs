@@ -1,54 +1,41 @@
-// Defines the Index.cshtml class/logic for the Supply Chain system.
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Net.Http.Json;
-using SupplyChain.Frontend.Pages;
-using SupplyChain.Backend.Models;
+using Microsoft.Data.SqlClient;
 
 namespace SupplyChain.Frontend.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public IndexModel(IHttpClientFactory httpClientFactory)
+        public IndexModel(IConfiguration configuration)
         {
-            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
-        public DashboardSummaryDto Summary { get; set; } = new();
+        public int TotalProducts = 0;
+        public int TotalCustomers = 0;
 
-        public async Task OnGetAsync()
+        public void OnGet()
         {
-            HttpClient client = _httpClientFactory.CreateClient("BackendApi");
+            string connectionString = _configuration.GetConnectionString("DefaultConnection");
 
-            try
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                var summary = await client.GetFromJsonAsync<DashboardSummaryDto>("api/DashboardSummary");
-                if (summary != null)
+                connection.Open();
+
+                string sqlProducts = "SELECT COUNT(*) FROM Product";
+                using (SqlCommand cmd = new SqlCommand(sqlProducts, connection))
                 {
-                    Summary = summary;
+                    TotalProducts = (int)cmd.ExecuteScalar();
+                }
+
+                string sqlCustomers = "SELECT COUNT(*) FROM Customer";
+                using (SqlCommand cmd = new SqlCommand(sqlCustomers, connection))
+                {
+                    TotalCustomers = (int)cmd.ExecuteScalar();
                 }
             }
-            catch (Exception)
-            {
-
-            }
-        }
-
-        public class DashboardSummaryDto
-        {
-            public int ProductCount { get; set; }
-            public int OrderCount { get; set; }
-            public decimal TotalRevenue { get; set; }
-            public int LowStockCount { get; set; }
-            public List<ActivityItemDto> RecentActivity { get; set; } = new();
-        }
-
-        public class ActivityItemDto
-        {
-            public string Type { get; set; } = string.Empty;
-            public string Description { get; set; } = string.Empty;
-            public DateTime Date { get; set; }
         }
     }
 }

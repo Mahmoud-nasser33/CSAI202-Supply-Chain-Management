@@ -1,167 +1,67 @@
-﻿@page
+@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @model SupplyChain.Frontend.Pages.OrdersModel
 @{
-    ViewData["Title"] = "Global Orders";
+    ViewData["Title"] = "Orders";
 }
 
-<div class="container-bento py-4">
-
-    <div class="d-flex justify-content-between align-items-center mb-4 animate-enter">
-        <div>
-            <h2 class="fw-bold mb-0 text-dark">Fulfillment Pipeline</h2>
-            <p class="text-muted mb-0">Asset Synchronization and manage global fulfillment flow</p>
-        </div>
-        <div>
-            <a href="/CreateOrder" class="btn btn-primary btn-lg shadow-sm px-4">
-                <i class="bi bi-plus-lg me-2"></i> Initiate Supply Chain Pipeline
-            </a>
-        </div>
-    </div>
-
-    <div class="bento-grid mb-5">
-
-        <div class="card border-0 shadow-sm glass-panel bg-gradient-dark text-white span-col-2 animate-enter delay-1" style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%) !important;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="bg-white bg-opacity-10 rounded-circle p-2">
-                        <i class="bi bi-currency-dollar fs-4"></i>
-                    </div>
-                    <span class="badge bg-success bg-opacity-25 text-success">+8.4% WoW</span>
-                </div>
-                <h2 class="display-5 fw-bold mb-0">@Model.Orders.Sum(o => o.TotalAmount).ToString("C0")</h2>
-                <small class="text-white text-opacity-75">Pipeline Value (Current Window)</small>
-            </div>
-        </div>
-
-        <div class="card border-0 shadow-sm glass-panel animate-enter delay-2">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2">
-                        <i class="bi bi-box-seam fs-4"></i>
-                    </div>
-                </div>
-                <h2 class="fw-bold mb-0 text-dark">@Model.Orders.Count</h2>
-                <small class="text-muted">Active Request Volume</small>
-            </div>
-        </div>
-
-        <div class="card border-0 shadow-sm glass-panel animate-enter delay-3">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-2">
-                        <i class="bi bi-hourglass-split fs-4"></i>
-                    </div>
-                    <span class="badge bg-warning bg-opacity-25 text-warning fw-bold">Attention</span>
-                </div>
-                <h2 class="fw-bold mb-0 text-dark">@Model.Orders.Count(o => o.Status == "Pending")</h2>
-                <small class="text-muted">Awaiting Fulfillment</small>
-            </div>
-        </div>
-    </div>
-
-    <div class="card shadow-sm border-0 glass-panel animate-enter delay-4 span-col-4">
-        <div class="card-body p-0">
-            <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-list-columns-reverse me-2"></i> Fulfillment Records</h5>
-                <form method="get" class="d-flex gap-2">
-                    <div class="input-group" style="width: 280px;">
-                        <span class="input-group-text bg-light border-0"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" name="searchString" value="@Model.SearchString" class="form-control border-0 bg-light" placeholder="Order #, status, or partner...">
-                    </div>
-                    <button type="submit" class="btn btn-light border">Filter</button>
-                    @if (!string.IsNullOrEmpty(Model.SearchString))
-                    {
-                        <a href="/Orders" class="btn btn-link text-muted">Clear</a>
-                    }
-                </form>
-            </div>
-
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
-                        <tr>
-                            <th class="ps-4 py-3">ID #</th>
-                            <th class="py-3">Timestamp</th>
-                            <th class="py-3">Trading Partner</th>
-                            <th class="py-3">Fulfillment Status</th>
-                             <th class="py-3">Net Value</th>
-                            <th class="text-end pe-4 py-3">Governance</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var order in Model.Orders)
-                        {
-                            <tr>
-                                <td class="ps-4">
-                                    <span class="fw-bold text-dark">#@order.OrderID</span>
-                                </td>
-                                <td>
-                                    <div class="small">@order.OrderDate.ToString("MMM dd, yyyy")</div>
-                                    <div class="text-muted smaller">@order.OrderDate.ToString("HH:mm")</div>
-                                </td>
-                                <td>
-                                    <div class="fw-bold text-dark">@order.CustomerName</div>
-                                    <div class="text-muted smaller">Corporate Entity</div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-pill px-3 py-2
-                                        @(order.Status switch {
-                                            "Pending" => "bg-warning-subtle text-warning border border-warning-subtle",
-                                            "Shipped" => "bg-info-subtle text-info border border-info-subtle",
-                                            "Delivered" => "bg-success-subtle text-success border border-success-subtle",
-                                            "Cancelled" => "bg-danger-subtle text-danger border border-danger-subtle",
-                                            _ => "bg-secondary-subtle text-secondary border border-secondary-subtle"
-                                        })">
-                                        @order.Status
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="fw-bold text-dark">@order.TotalAmount.ToString("C")</span>
-                                </td>
-                                <td class="text-end pe-4">
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown">
-                                            <i class="bi bi-three-dots-vertical"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow animate-fade-in">
-                                            <li><a class="dropdown-item" asp-page="/OrderDetails" asp-route-id="@order.OrderID"><i class="bi bi-eye me-2 text-muted"></i> View Manifest</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="bi bi-printer me-2 text-muted"></i> Export Waybill</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            @if(order.Status != "Cancelled" && order.Status != "Delivered")
-                                            {
-                                                <li>
-                                                    <form method="post" asp-page-handler="Delete" asp-route-id="@order.OrderID">
-                                                        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-dash-circle me-2"></i> Cancel Order</button>
-                                                    </form>
-                                                </li>
-                                            }
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            @if(!Model.Orders.Any())
-            {
-                <div class="text-center py-5 text-muted">
-                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                    No records matched your criteria.
-                </div>
-            }
-
-            <div class="p-3 border-top d-flex justify-content-between align-items-center">
-                <small class="text-muted">Showing @Model.Orders.Count fulfillment records</small>
-                <nav aria-label="Page navigation">
-                    <ul class="pagination pagination-sm mb-0">
-                        <li class="page-item disabled"><a class="page-link border-0 rounded-start" href="#">Prev</a></li>
-                        <li class="page-item active"><a class="page-link border-0" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link border-0 rounded-end" href="#">Next</a></li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    </div>
+<div class="page-header">
+    <h1>Order Processing</h1>
+    <p class="text-muted">Manage client purchase orders and fulfillment status.</p>
 </div>
+
+<img src="/images/service.png" alt="Order Management" class="illustrative-img" />
+
+
+<h3>Create New Order</h3>
+<div class="classic-form">
+    <form method="post">
+        <div>
+            <label>Customer ID Reference</label>
+            <input type="number" name="NewCustomerID" placeholder="Enter valid customer ID" />
+        </div>
+        <div>
+            <label>Estimated Total Value ($)</label>
+            <input type="number" name="NewOrderTotal" step="0.01" placeholder="0.00" />
+        </div>
+        <button type="submit">Initiate Order</button>
+    </form>
+</div>
+
+<hr />
+
+
+<h3>Recent Order Log</h3>
+<table class="classic-table">
+    <thead>
+        <tr>
+            <th>Order Ref #</th>
+            <th>Client Name</th>
+            <th>Booking Date</th>
+            <th>Current Status</th>
+            <th>Total Value</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.OrderList)
+        {
+            <tr>
+                <td style="font-weight: 700;">#@item.OrderID</td>
+                <td>@item.CustomerName</td>
+                <td>@item.OrderDate.ToShortDateString()</td>
+                <td>
+                    <span style="background:var(--primary-light); color:var(--primary); padding:4px 8px; border-radius:4px; font-size:0.85rem; font-weight:700;">
+                        @item.Status
+                    </span>
+                </td>
+                <td>$@item.TotalAmount.ToString("N2")</td>
+                <td>
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@item.OrderID" onsubmit="return confirm('Remove this order?');" style="margin:0;">
+                         <button type="submit" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold; padding:0;">Remove</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
