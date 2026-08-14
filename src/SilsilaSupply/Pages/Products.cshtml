@@ -1,0 +1,78 @@
+﻿@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model SilsilaSupply.Pages.ProductsModel
+@{
+    ViewData["Title"] = "Products";
+}
+
+<div class="page-head">
+    <p class="page-kicker">Catalog</p>
+    <h1>Products</h1>
+    <p class="page-lead">The goods Silsila Supply sources, stores and ships.</p>
+</div>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-error" role="alert">
+        <strong>Action failed.</strong> @Model.ErrorMessage
+    </div>
+}
+
+<section class="panel">
+    <h2>Register a new product</h2>
+    <form method="post" class="form-grid">
+        <div class="form-group">
+            <label asp-for="ProductInput.Name">Product name</label>
+            <input asp-for="ProductInput.Name" class="form-control" placeholder="e.g. Mawaseer PVC 4 Inch" />
+            <span asp-validation-for="ProductInput.Name" class="field-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="ProductInput.Price">Unit price (E£)</label>
+            <input asp-for="ProductInput.Price" class="form-control" type="number" step="0.01" min="0.01" placeholder="0.00" inputmode="decimal" />
+            <span asp-validation-for="ProductInput.Price" class="field-error"></span>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Register product</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <h2>Product catalog</h2>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th scope="col">Product</th>
+                    <th scope="col" class="cell-num">Unit price</th>
+                    <th scope="col" class="cell-actions-head"><span class="sr-only">Actions</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Products.Count == 0)
+                {
+                    <tr>
+                        <td colspan="3" class="empty-state">No products registered yet.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var product in Model.Products)
+                    {
+                        <tr>
+                            <td class="cell-strong">@product.Name</td>
+                            <td class="cell-num cell-mono">@($"E£ {product.Price.ToString("N2")}")</td>
+                            <td class="cell-actions">
+                                <a asp-page="/Products/Edit" asp-route-id="@product.ProductId" class="btn btn-secondary btn-sm">Edit</a>
+                                <form method="post" asp-page-handler="Delete" asp-route-id="@product.ProductId"
+                                      onsubmit="return confirm('Remove @product.Name? This also removes its stock entries and order line items.');" class="inline-form">
+                                    <button type="submit" class="btn btn-danger btn-sm" aria-label="Remove product @product.Name">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

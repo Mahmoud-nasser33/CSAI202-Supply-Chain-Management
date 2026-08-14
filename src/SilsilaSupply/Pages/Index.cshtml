@@ -1,0 +1,167 @@
+﻿@page
+@using SilsilaSupply.Helpers
+@model SilsilaSupply.Pages.IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="page-head">
+    <p class="page-kicker">Operations overview</p>
+    <h1>Supply chain dashboard</h1>
+    <p class="page-lead">Live view of the Silsila Supply network — catalog, customers, orders and stock.</p>
+</div>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-error" role="alert">
+        <strong>Could not load the dashboard.</strong> @Model.ErrorMessage
+    </div>
+}
+
+<div class="stat-grid">
+    <div class="stat">
+        <span class="stat-label">Products</span>
+        <span class="stat-value">@Model.Stats.TotalProducts</span>
+        <span class="stat-hint">Catalog entries</span>
+    </div>
+    <div class="stat stat-ink">
+        <span class="stat-label">Customers</span>
+        <span class="stat-value">@Model.Stats.TotalCustomers</span>
+        <span class="stat-hint">Registered clients</span>
+    </div>
+    <div class="stat stat-amber">
+        <span class="stat-label">Orders</span>
+        <span class="stat-value">@Model.Stats.TotalOrders</span>
+        <span class="stat-hint">Purchase orders on record</span>
+    </div>
+    <a href="/Inventory?low=1" class="stat stat-link @(Model.Stats.LowStockItems > 0 ? "stat-alert" : "stat-ink")">
+        <span class="stat-label">Low stock</span>
+        <span class="stat-value @(Model.Stats.LowStockItems > 0 ? "stat-value-warn" : "")">@Model.Stats.LowStockItems</span>
+        <span class="stat-hint">Items below reorder level</span>
+    </a>
+</div>
+
+<section class="panel network-panel">
+    <div>
+        <h2>The network</h2>
+        <p>Warehouses in Obour City, the Alex port zone and Ein Sokhna keep stock close to the customers who need it.</p>
+    </div>
+    <div class="network-map" role="img" aria-label="Map of the Silsila Supply network between Alexandria, Obour City and Ein Sokhna">
+        <svg viewBox="0 0 460 380" focusable="false" aria-hidden="true">
+            <path class="map-land" d="M 58 75 C 95 58, 130 50, 170 54 C 210 44, 250 44, 288 52 C 290 75, 293 95, 295 115 C 300 150, 304 178, 310 208 C 316 260, 314 310, 310 350 C 260 345, 210 340, 180 336 C 125 330, 78 260, 60 185 C 54 145, 55 100, 58 75 Z" />
+            <path class="map-land" d="M 290 50 C 330 42, 360 40, 384 50 C 388 90, 388 130, 384 175 C 382 185, 372 192, 360 190 C 340 186, 320 178, 308 165 C 300 145, 298 130, 298 120 C 292 90, 292 70, 290 50 Z" />
+            <path class="map-line-nile" d="M 178 336 C 182 280, 176 220, 172 170 C 168 130, 168 108, 172 95 M 172 95 C 160 82, 140 70, 118 62 M 172 95 C 195 80, 225 66, 255 55" />
+            <path class="map-route" d="M 110 69 C 140 80, 160 95, 180 108" />
+            <path class="map-route" d="M 188 113 C 230 130, 268 156, 302 180" />
+            <path class="map-route map-route-amber" d="M 110 70 C 170 58, 250 60, 293 90 C 298 118, 301 148, 304 176" />
+            <circle cx="108" cy="66" r="7" class="map-hub-ring" />
+            <circle cx="108" cy="66" r="2.5" class="map-hub-dot" />
+            <circle cx="184" cy="110" r="7" class="map-hub-ring" />
+            <circle cx="184" cy="110" r="2.5" class="map-hub-dot" />
+            <circle cx="305" cy="182" r="7" class="map-hub-ring" />
+            <circle cx="305" cy="182" r="2.5" class="map-hub-dot-amber" />
+            <text x="108" y="48" text-anchor="middle" class="map-label">Alexandria</text>
+            <text x="184" y="134" text-anchor="middle" class="map-label">Obour City</text>
+            <text x="306" y="210" text-anchor="middle" class="map-label">Ein Sokhna</text>
+            <text x="280" y="26" text-anchor="middle" class="map-label-muted">Mediterranean</text>
+            <text x="135" y="100" text-anchor="middle" class="map-label-muted">Nile Delta</text>
+            <text x="402" y="245" text-anchor="middle" class="map-label-muted">Red Sea</text>
+        </svg>
+    </div>
+</section>
+
+<div class="dashboard-cols">
+    <section class="panel">
+        <div class="panel-head-row">
+            <h2>Order flow</h2>
+            @if (Model.Stats.OrdersTracked > 0)
+            {
+                <span class="flow-note">@Model.Stats.OrdersTracked of @Model.Stats.TotalOrders tracked</span>
+            }
+        </div>
+        @if (Model.Stats.OrdersTracked == 0)
+        {
+            <p class="text-muted">No orders to break down yet — create one on the Orders page.</p>
+        }
+        else
+        {
+            <div class="flow-bar" role="img" aria-label="Order flow breakdown by stage">
+                @if (Model.Stats.OrdersInPrep > 0)
+                {
+                    <span class="flow-seg flow-progress" style="width: @(Model.Stats.OrdersInPrep * 100.0 / Model.Stats.OrdersTracked)%;"></span>
+                }
+                @if (Model.Stats.OrdersDelivered > 0)
+                {
+                    <span class="flow-seg flow-ok" style="width: @(Model.Stats.OrdersDelivered * 100.0 / Model.Stats.OrdersTracked)%;"></span>
+                }
+                @if (Model.Stats.OrdersProblem > 0)
+                {
+                    <span class="flow-seg flow-danger" style="width: @(Model.Stats.OrdersProblem * 100.0 / Model.Stats.OrdersTracked)%;"></span>
+                }
+                @if (Model.Stats.OrdersOther > 0)
+                {
+                    <span class="flow-seg flow-neutral" style="width: @(Model.Stats.OrdersOther * 100.0 / Model.Stats.OrdersTracked)%;"></span>
+                }
+            </div>
+            <div class="flow-legend">
+                <span class="chip chip-progress">@Model.Stats.OrdersInPrep in prep</span>
+                <span class="chip chip-ok">@Model.Stats.OrdersDelivered delivered</span>
+                <span class="chip chip-danger">@Model.Stats.OrdersProblem problems</span>
+                @if (Model.Stats.OrdersOther > 0)
+                {
+                    <span class="chip chip-neutral">@Model.Stats.OrdersOther other</span>
+                }
+            </div>
+        }
+    </section>
+
+    <section class="panel">
+        <div class="panel-head-row">
+            <h2>Latest orders</h2>
+            <a asp-page="/Orders" class="btn btn-secondary btn-sm">All orders</a>
+        </div>
+        @if (Model.RecentOrders.Count == 0)
+        {
+            <p class="text-muted">No orders recorded yet.</p>
+        }
+        else
+        {
+            <ul class="activity-list">
+                @foreach (var order in Model.RecentOrders)
+                {
+                    <li class="activity-item">
+                        <div class="activity-main">
+                            <span class="activity-ref cell-mono">#@order.OrderId</span>
+                            <span class="activity-title">@(order.CustomerName ?? "Unknown customer")</span>
+                            <span class="activity-meta">@Formatting.Ago(order.OrderDate)</span>
+                        </div>
+                        <div class="activity-side">
+                            @if (!string.IsNullOrEmpty(order.Status))
+                            {
+                                <span class="badge @StatusBadges.ClassFor(order.Status)">@order.Status</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">no status</span>
+                            }
+                            @if (order.TotalAmount.HasValue)
+                            {
+                                <span class="activity-amount cell-mono">@($"E£ {order.TotalAmount.Value.ToString("N2")}")</span>
+                            }
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+</div>
+
+<section class="panel">
+    <h2>Jump to work</h2>
+    <div class="quick-link-grid">
+        <a href="/Orders" class="quick-link">Create an order</a>
+        <a href="/Inventory" class="quick-link">Check stock levels</a>
+        <a href="/Shipments" class="quick-link">Track shipments</a>
+        <a href="/Products" class="quick-link">Manage the catalog</a>
+    </div>
+</section>

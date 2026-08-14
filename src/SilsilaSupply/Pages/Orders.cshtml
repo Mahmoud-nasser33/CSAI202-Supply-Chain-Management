@@ -1,0 +1,117 @@
+﻿@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using SilsilaSupply.Helpers
+@model SilsilaSupply.Pages.OrdersModel
+@{
+    ViewData["Title"] = "Orders";
+}
+
+<div class="page-head">
+    <p class="page-kicker">Fulfillment</p>
+    <h1>Orders</h1>
+    <p class="page-lead">Purchase orders placed by customers across the network.</p>
+</div>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-error" role="alert">
+        <strong>Action failed.</strong> @Model.ErrorMessage
+    </div>
+}
+
+<section class="panel">
+    <h2>Create a new order</h2>
+    <form method="post" class="form-grid">
+        <div class="form-group">
+            <label asp-for="OrderInput.CustomerId">Customer</label>
+            <select asp-for="OrderInput.CustomerId" asp-items="Model.CustomerOptions" class="form-control">
+                <option value="">Select a customer…</option>
+            </select>
+            <span asp-validation-for="OrderInput.CustomerId" class="field-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="OrderInput.TotalAmount">Total amount (E£)</label>
+            <input asp-for="OrderInput.TotalAmount" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" inputmode="decimal" />
+            <span asp-validation-for="OrderInput.TotalAmount" class="field-error"></span>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Create order</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-head-row">
+        <h2>Order records</h2>
+        @if (Model.Orders.Count > 0)
+        {
+            var inPrep = Model.Orders.Count(o => StatusBadges.ClassFor(o.Status) == "badge-progress");
+            var delivered = Model.Orders.Count(o => StatusBadges.ClassFor(o.Status) == "badge-ok");
+            var problem = Model.Orders.Count(o => StatusBadges.ClassFor(o.Status) == "badge-danger");
+            var other = Model.Orders.Count - inPrep - delivered - problem;
+            <div class="flow-legend">
+                <span class="chip chip-progress">@inPrep in prep</span>
+                <span class="chip chip-ok">@delivered delivered</span>
+                @if (problem > 0)
+                {
+                    <span class="chip chip-danger">@problem problems</span>
+                }
+                @if (other > 0)
+                {
+                    <span class="chip chip-neutral">@other other</span>
+                }
+            </div>
+        }
+    </div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th scope="col">Order #</th>
+                    <th scope="col">Customer</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Status</th>
+                    <th scope="col" class="cell-num">Total</th>
+                    <th scope="col" class="cell-actions-head"><span class="sr-only">Actions</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Orders.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="empty-state">No orders recorded yet.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var order in Model.Orders)
+                    {
+                        <tr>
+                            <td class="cell-mono">#@order.OrderId</td>
+                            <td class="cell-strong">@(order.CustomerName ?? "—")</td>
+                            <td>@(order.OrderDate?.ToShortDateString() ?? "—")</td>
+                            <td>
+                                @if (string.IsNullOrEmpty(order.Status))
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                                else
+                                {
+                                    <span class="badge @StatusBadges.ClassFor(order.Status)">@order.Status</span>
+                                }
+                            </td>
+                            <td class="cell-num cell-mono">@($"E£ {(order.TotalAmount.HasValue ? order.TotalAmount.Value.ToString("N2") : "—")}")</td>
+                            <td class="cell-actions">
+                                <a asp-page="/Orders/Edit" asp-route-id="@order.OrderId" class="btn btn-secondary btn-sm">Edit</a>
+                                <form method="post" asp-page-handler="Delete" asp-route-id="@order.OrderId"
+                                      onsubmit="return confirm('Remove order #@order.OrderId and its shipments, payments and line items?');" class="inline-form">
+                                    <button type="submit" class="btn btn-danger btn-sm" aria-label="Remove order #@order.OrderId">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

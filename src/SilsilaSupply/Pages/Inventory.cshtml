@@ -1,0 +1,111 @@
+﻿@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model SilsilaSupply.Pages.InventoryModel
+@{
+    ViewData["Title"] = "Inventory";
+}
+
+<div class="page-head">
+    <p class="page-kicker">Warehousing</p>
+    <h1>Inventory</h1>
+    <p class="page-lead">Stock levels across the Silsila Supply warehouse network.</p>
+</div>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-error" role="alert">
+        <strong>Action failed.</strong> @Model.ErrorMessage
+    </div>
+}
+
+<section class="panel">
+    <h2>Record stock entry</h2>
+    <form method="post" class="form-grid">
+        <div class="form-group">
+            <label asp-for="InventoryInput.ProductId">Product</label>
+            <select asp-for="InventoryInput.ProductId" asp-items="Model.ProductOptions" class="form-control">
+                <option value="">Select a product…</option>
+            </select>
+            <span asp-validation-for="InventoryInput.ProductId" class="field-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="InventoryInput.WarehouseId">Warehouse</label>
+            <select asp-for="InventoryInput.WarehouseId" asp-items="Model.WarehouseOptions" class="form-control">
+                <option value="">Select a warehouse…</option>
+            </select>
+            <span asp-validation-for="InventoryInput.WarehouseId" class="field-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="InventoryInput.Quantity">Quantity on hand</label>
+            <input asp-for="InventoryInput.Quantity" class="form-control" type="number" step="1" min="1" placeholder="0" inputmode="numeric" />
+            <span asp-validation-for="InventoryInput.Quantity" class="field-error"></span>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Record stock</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-head-row">
+        <h2>Current stock</h2>
+        @if (Model.LowFilterActive)
+        {
+            <a asp-page="/Inventory" class="btn btn-secondary btn-sm">Show all stock</a>
+        }
+        else
+        {
+            <a asp-page="/Inventory" asp-route-low="1" class="btn btn-amber btn-sm">Show low stock only</a>
+        }
+    </div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th scope="col">Product</th>
+                    <th scope="col">Warehouse</th>
+                    <th scope="col" class="cell-num">On hand</th>
+                    <th scope="col">Last updated</th>
+                    <th scope="col" class="cell-actions-head"><span class="sr-only">Actions</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Inventory.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" class="empty-state">@(Model.LowFilterActive ? "No items are currently below their reorder level." : "No stock entries recorded yet.")</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model.Inventory)
+                    {
+                        var threshold = item.ReorderLevel ?? 10;
+                        var healthy = threshold * 2;
+                        var pct = (int)Math.Clamp(item.Quantity / (double)healthy * 100.0, 3, 100);
+                        var barState = item.IsLowStock ? "stock-bar-danger" : item.Quantity <= healthy ? "stock-bar-warn" : "stock-bar-ok";
+                        <tr>
+                            <td class="cell-strong">@(item.ProductName ?? "—")</td>
+                            <td>@(item.WarehouseName ?? "—")</td>
+                            <td class="cell-num">
+                                <span class="cell-mono">@item.Quantity</span>
+                                <div class="stock-bar" title="Quantity vs reorder level">
+                                    <span class="stock-bar-fill @barState" style="width: @pct%;"></span>
+                                </div>
+                                <span class="stock-caption">reorder level @threshold</span>
+                            </td>
+                            <td>@(item.LastUpdated?.ToShortDateString() ?? "—")</td>
+                            <td class="cell-actions">
+                                <a asp-page="/Inventory/Edit" asp-route-id="@item.InventoryId" class="btn btn-secondary btn-sm">Edit</a>
+                                <form method="post" asp-page-handler="Delete" asp-route-id="@item.InventoryId"
+                                      onsubmit="return confirm('Remove this stock entry?');" class="inline-form">
+                                    <button type="submit" class="btn btn-danger btn-sm" aria-label="Remove stock entry for @item.ProductName">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

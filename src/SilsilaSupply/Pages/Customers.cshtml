@@ -1,0 +1,78 @@
+﻿@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model SilsilaSupply.Pages.CustomersModel
+@{
+    ViewData["Title"] = "Customers";
+}
+
+<div class="page-head">
+    <p class="page-kicker">Client base</p>
+    <h1>Customers</h1>
+    <p class="page-lead">Verified profiles of the customers Silsila Supply serves.</p>
+</div>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-error" role="alert">
+        <strong>Action failed.</strong> @Model.ErrorMessage
+    </div>
+}
+
+<section class="panel">
+    <h2>Onboard a new customer</h2>
+    <form method="post" class="form-grid">
+        <div class="form-group">
+            <label asp-for="CustomerInput.Name">Full name</label>
+            <input asp-for="CustomerInput.Name" class="form-control" placeholder="e.g. Mahmoud Sakr" autocomplete="name" />
+            <span asp-validation-for="CustomerInput.Name" class="field-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="CustomerInput.Email">Email address</label>
+            <input asp-for="CustomerInput.Email" class="form-control" placeholder="client@company.com" autocomplete="email" />
+            <span asp-validation-for="CustomerInput.Email" class="field-error"></span>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Onboard customer</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <h2>Customer records</h2>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th scope="col">Full name</th>
+                    <th scope="col">Email address</th>
+                    <th scope="col" class="cell-actions-head"><span class="sr-only">Actions</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Customers.Count == 0)
+                {
+                    <tr>
+                        <td colspan="3" class="empty-state">No customers registered yet.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var customer in Model.Customers)
+                    {
+                        <tr>
+                            <td class="cell-strong">@customer.Name</td>
+                            <td>@customer.Email</td>
+                            <td class="cell-actions">
+                                <a asp-page="/Customers/Edit" asp-route-id="@customer.CustomerId" class="btn btn-secondary btn-sm">Edit</a>
+                                <form method="post" asp-page-handler="Delete" asp-route-id="@customer.CustomerId"
+                                      onsubmit="return confirm('Remove @customer.Name and all of their linked orders?');" class="inline-form">
+                                    <button type="submit" class="btn btn-danger btn-sm" aria-label="Remove customer @customer.Name">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

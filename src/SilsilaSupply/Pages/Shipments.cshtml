@@ -1,0 +1,103 @@
+﻿@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using SilsilaSupply.Helpers
+@model SilsilaSupply.Pages.ShipmentsModel
+@{
+    ViewData["Title"] = "Shipments";
+}
+
+<div class="page-head">
+    <p class="page-kicker">Logistics</p>
+    <h1>Shipments</h1>
+    <p class="page-lead">Dispatch and track deliveries to customers.</p>
+</div>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-error" role="alert">
+        <strong>Action failed.</strong> @Model.ErrorMessage
+    </div>
+}
+
+<section class="panel">
+    <h2>Create a new shipment</h2>
+    <form method="post" class="form-grid">
+        <div class="form-group">
+            <label asp-for="ShipmentInput.OrderId">Order</label>
+            <select asp-for="ShipmentInput.OrderId" asp-items="Model.OrderOptions" class="form-control">
+                <option value="">Select an order…</option>
+            </select>
+            <span asp-validation-for="ShipmentInput.OrderId" class="field-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="ShipmentInput.WarehouseId">Origin warehouse</label>
+            <select asp-for="ShipmentInput.WarehouseId" asp-items="Model.WarehouseOptions" class="form-control">
+                <option value="">Select a warehouse…</option>
+            </select>
+            <span asp-validation-for="ShipmentInput.WarehouseId" class="field-error"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="ShipmentInput.ShippedVia">Carrier / method</label>
+            <input asp-for="ShipmentInput.ShippedVia" class="form-control" placeholder="e.g. El-Bariq Express" />
+            <span asp-validation-for="ShipmentInput.ShippedVia" class="field-error"></span>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Dispatch shipment</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <h2>Shipment records</h2>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th scope="col">Order #</th>
+                    <th scope="col">Customer</th>
+                    <th scope="col">Origin warehouse</th>
+                    <th scope="col">Carrier</th>
+                    <th scope="col">Status</th>
+                    <th scope="col" class="cell-actions-head"><span class="sr-only">Actions</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Shipments.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="empty-state">No shipments recorded yet.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var shipment in Model.Shipments)
+                    {
+                        <tr>
+                            <td class="cell-mono">#@shipment.OrderId</td>
+                            <td class="cell-strong">@(shipment.CustomerName ?? "—")</td>
+                            <td>@(shipment.WarehouseName ?? "—")</td>
+                            <td>@(shipment.ShippedVia ?? "—")</td>
+                            <td>
+                                @if (string.IsNullOrEmpty(shipment.Status))
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                                else
+                                {
+                                    <span class="badge @StatusBadges.ClassFor(shipment.Status)">@shipment.Status</span>
+                                }
+                            </td>
+                            <td class="cell-actions">
+                                <a asp-page="/Shipments/Edit" asp-route-id="@shipment.ShipmentId" class="btn btn-secondary btn-sm">Edit</a>
+                                <form method="post" asp-page-handler="Delete" asp-route-id="@shipment.ShipmentId"
+                                      onsubmit="return confirm('Remove this shipment?');" class="inline-form">
+                                    <button type="submit" class="btn btn-danger btn-sm" aria-label="Remove shipment for order #@shipment.OrderId">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

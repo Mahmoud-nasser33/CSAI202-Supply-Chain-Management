@@ -1,0 +1,55 @@
+﻿@page "{id:int}"
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model SilsilaSupply.Pages.Shipments.EditModel
+@{
+    ViewData["Title"] = "Edit Shipment";
+}
+
+<div class="page-head">
+    <p class="page-kicker">Logistics</p>
+    <h1>Edit shipment</h1>
+    <p class="page-lead">Update the origin warehouse, carrier and status for this shipment.</p>
+</div>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-error" role="alert">
+        <strong>Action failed.</strong> @Model.ErrorMessage
+    </div>
+}
+
+@if (Model.OrderReference != null || Model.ErrorMessage == null)
+{
+    <section class="panel panel-narrow">
+        <h2>Shipment @(Model.OrderReference ?? "details")</h2>
+        <form method="post" class="form-grid">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ShipmentInput.OrderId" />
+            <div class="form-group form-group-readonly">
+                <label>Order</label>
+                <div class="readonly-value">@(Model.OrderReference ?? "—") — @(Model.CustomerName ?? "Unknown customer")</div>
+            </div>
+            <div class="form-group">
+                <label asp-for="ShipmentInput.WarehouseId">Origin warehouse</label>
+                <select asp-for="ShipmentInput.WarehouseId" asp-items="Model.WarehouseOptions" class="form-control">
+                    <option value="">Select a warehouse…</option>
+                </select>
+                <span asp-validation-for="ShipmentInput.WarehouseId" class="field-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ShipmentInput.ShippedVia">Carrier / method</label>
+                <input asp-for="ShipmentInput.ShippedVia" class="form-control" />
+                <span asp-validation-for="ShipmentInput.ShippedVia" class="field-error"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ShipmentInput.Status">Status</label>
+                <input asp-for="ShipmentInput.Status" class="form-control" placeholder="e.g. Pending, In Transit, Delivered" />
+                <span asp-validation-for="ShipmentInput.Status" class="field-error"></span>
+            </div>
+            <div class="form-actions form-actions-row">
+                <button type="submit" class="btn btn-primary">Save changes</button>
+                <a asp-page="/Shipments" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </section>
+}

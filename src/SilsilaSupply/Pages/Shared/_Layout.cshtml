@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Silsila Supply</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+@{
+    var currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+    string NavClass(string page, string current) =>
+        current == page || (current.StartsWith(page + "/", StringComparison.OrdinalIgnoreCase)) ? "active" : "";
+}
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div class="app">
+        <aside class="sidebar" aria-label="Primary navigation">
+            <a href="/" class="brand">
+                <span class="brand-mark" aria-hidden="true">S</span>
+                <span class="brand-name">Silsila Supply</span>
+            </a>
+
+            <nav class="nav">
+                <a href="/" class="nav-link @NavClass("/Index", currentPage)">Dashboard</a>
+                <a href="/Orders" class="nav-link @NavClass("/Orders", currentPage)">Orders</a>
+                <a href="/Shipments" class="nav-link @NavClass("/Shipments", currentPage)">Shipments</a>
+                <a href="/Products" class="nav-link @NavClass("/Products", currentPage)">Products</a>
+                <a href="/Inventory" class="nav-link @NavClass("/Inventory", currentPage)">Inventory</a>
+                <a href="/Suppliers" class="nav-link @NavClass("/Suppliers", currentPage)">Suppliers</a>
+                <a href="/Customers" class="nav-link @NavClass("/Customers", currentPage)">Customers</a>
+            </nav>
+
+            <div class="sidebar-foot">
+                <span class="sidebar-foot-label">Supply-chain operations</span>
+                <span class="sidebar-foot-value">CSAI 202 — Student Project</span>
+            </div>
+        </aside>
+
+        <main class="content" id="main">
+            @RenderBody()
+
+            <footer class="app-footer">
+                <span>Silsila Supply &copy; 2025</span>
+                <span class="app-footer-sep" aria-hidden="true">·</span>
+                <span>By Mahmoud Sakr, Mohamed Tamer &amp; Ahmed Noman</span>
+            </footer>
+        </main>
+    </div>
+</body>
+</html>
