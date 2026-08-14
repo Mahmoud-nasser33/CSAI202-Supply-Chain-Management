@@ -11,5 +11,4 @@ The project supports full CRUD for Customers, Orders, Shipments, Products, Inven
 There's no authentication and the app is single-user only. The Payment, Feedback, and Notification tables exist in the schema but don't have pages yet.
 
 
-https://github.com/user-attachments/assets/4e53f4d9-d865-4036-a38a-b76741ec6c84
 
