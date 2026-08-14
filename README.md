@@ -9,3 +9,7 @@ The app follows a simple flow: Razor Pages call into PageModels, which handle fo
 The project supports full CRUD for Customers, Orders, Shipments, Products, Inventory, and Suppliers, with cascading deletes wrapped in transactions and parameterized SQL throughout. Common database errors like duplicates or foreign key conflicts are turned into friendly messages, and the Inventory page includes a low-stock filter.
 
 There's no authentication and the app is single-user only. The Payment, Feedback, and Notification tables exist in the schema but don't have pages yet.
+
+
+https://github.com/user-attachments/assets/4e53f4d9-d865-4036-a38a-b76741ec6c84
+
