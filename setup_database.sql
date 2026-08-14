@@ -1,21 +1,9 @@
-/* ==========================================================================
-   Silsila Supply — database setup
-   --------------------------------------------------------------------------
-   This script is re-runnable. Running it DROPS and recreates every table in
-   the SupplyChainDB database (all data is lost), then reloads seed data.
-
-   Usage:
-     sqlcmd -S "(localdb)\MSSQLLocalDB" -i setup_database.sql
-   ========================================================================== */
-
 IF DB_ID('SupplyChainDB') IS NULL
     CREATE DATABASE SupplyChainDB;
 GO
 
 USE SupplyChainDB;
 GO
-
-/* --- Drop existing tables (children first, respecting foreign keys) ------ */
 
 DROP TABLE IF EXISTS Notification;
 DROP TABLE IF EXISTS Feedback;
@@ -32,7 +20,7 @@ DROP TABLE IF EXISTS Category;
 DROP TABLE IF EXISTS [User];
 DROP TABLE IF EXISTS Role;
 
-/* --- Schema -------------------------------------------------------------- */
+
 
 CREATE TABLE Role (
     RoleID INT PRIMARY KEY IDENTITY(1,1),
